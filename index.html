@@ -49,6 +49,17 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
 .product-settings{width:100%;border-collapse:collapse}.product-settings th,.product-settings td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;font-size:11px}.product-settings input{padding:7px;font-size:11px;min-width:70px}
 .modal-backdrop{position:fixed;inset:0;background:#14251bd0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}.modal{background:#fff;border-radius:12px;max-width:760px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 70px #0004}.modalhead,.modalfoot{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.modalfoot{border:0;border-top:1px solid var(--line);justify-content:flex-end;gap:8px}.modalbody{padding:18px}
 .toast{position:fixed;bottom:20px;right:20px;background:#203e2e;color:#fff;padding:12px 16px;border-radius:8px;box-shadow:var(--shadow);z-index:20;max-width:360px}
+
+.product-master-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap}
+.product-master-table{width:100%;border-collapse:collapse;min-width:860px}
+.product-master-table th,.product-master-table td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:12px;vertical-align:middle}
+.product-master-table th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);background:#fafcf9}
+.product-master-table td strong{font-size:12px}
+.product-master-table .actions{display:flex;gap:6px}
+.product-master-table .actions button{padding:6px 8px;font-size:11px}
+.pill-active{display:inline-block;padding:3px 7px;border-radius:20px;background:#e9f4ec;color:#28623d;font-size:10px;font-weight:750}
+.pill-inactive{display:inline-block;padding:3px 7px;border-radius:20px;background:#f2eeee;color:#795d5d;font-size:10px;font-weight:750}
+.product-master-empty{padding:38px 16px;text-align:center;color:var(--muted)}
 .receipt{display:none}
 @media(max-width:1050px){.app{grid-template-columns:190px 1fr}.layout{grid-template-columns:1fr}.products{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.app{display:block}.sidebar{display:none}.topbar{padding:0 16px}.content{padding:16px}.products{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-grid{grid-template-columns:1fr}.fields.three{grid-template-columns:1fr 1fr}}
@@ -88,12 +99,26 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
  <div class="brand"><strong>WELLWITH <span style="color:#b6d6c2">OS</span></strong><small>The Original Sea Buckthorn Co.</small></div>
  <div class="org"><b>DURGA VENTURES</b>Wellwith Mangaluru Store<br><span style="color:#c3d8ca">Business workspace</span></div>
  <div class="navlabel">Workspace</div>
- <nav class="nav"><button>▦ &nbsp; Dashboard</button><button class="active">▣ &nbsp; POS & Billing</button><button>♙ &nbsp; CRM</button><button>▤ &nbsp; Books & Accounts</button><button>▥ &nbsp; Inventory</button><button>⇧ &nbsp; Purchases</button><button>₹ &nbsp; Expenses</button><button>♧ &nbsp; HR & Payroll</button><button>◉ &nbsp; Marketing</button><button>▥ &nbsp; Reports & Analytics</button><button>⚙ &nbsp; Administration</button></nav>
+ <nav class="nav"><button data-view="pos">▣ &nbsp; POS & Billing</button><button data-view="products" class="active">▦ &nbsp; Product Master</button><button disabled>♙ &nbsp; CRM</button><button disabled>▤ &nbsp; Books & Accounts</button><button disabled>▥ &nbsp; Inventory</button><button disabled>⇧ &nbsp; Purchases</button><button disabled>₹ &nbsp; Expenses</button><button disabled>♧ &nbsp; HR & Payroll</button><button disabled>◉ &nbsp; Marketing</button><button disabled>▥ &nbsp; Reports & Analytics</button><button disabled>⚙ &nbsp; Administration</button></nav>
  <div class="sidefoot">Firebase-connected workspace<br>Empty catalogue · Add your products</div>
 </aside>
 <main>
  <header class="topbar"><div><div class="crumb">Wellwith OS / Sales</div><h1>POS & Billing</h1></div><div class="user"><span id="signedInEmail">Not signed in</span><span id="cloudStatus" class="cloud-indicator">● Connecting</span> &nbsp; <button class="btn" id="logoutBtn" style="padding:6px 9px;margin-left:8px">Sign out</button></div></header>
  <div class="content">
+  <section id="productMasterView">
+   <div class="toolbar"><div><h2 style="margin:0;font-size:20px">Product Master</h2><p>Central product catalogue shared with POS. Create and maintain product details here.</p></div><div class="toolbar-actions"><button class="btn primary" id="masterAddProductBtn">+ Add product</button></div></div>
+   <div class="panel">
+    <div class="panel-body">
+     <div class="product-master-toolbar">
+      <div style="display:flex;gap:9px;flex:1;min-width:240px"><input id="masterSearch" placeholder="Search name, SKU or barcode…"><select id="masterStatus" style="max-width:150px"><option value="active">Active products</option><option value="all">All products</option><option value="inactive">Inactive products</option></select></div>
+      <span class="small muted" id="masterCount">0 products</span>
+     </div>
+     <div style="overflow:auto"><table class="product-master-table"><thead><tr><th>Product</th><th>SKU / Barcode</th><th>Category</th><th>Purchase</th><th>Selling</th><th>MRP</th><th>HSN / GST</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody id="masterRows"></tbody></table></div>
+     <div id="masterEmpty" class="product-master-empty">No products yet. Add your first product to build the catalogue.</div>
+    </div>
+   </div>
+  </section>
+  <section id="posView" class="hidden">
   <div class="toolbar"><div><h2 style="margin:0;font-size:20px">New sale</h2><p>Create retail or GST business invoice previews. Cloud records are test records until server-side invoice finalization is deployed.</p></div><div class="toolbar-actions"><button class="btn" id="settingsBtn">⚙ POS Settings</button><button class="btn" id="historyBtn">Sales history</button></div></div>
   <div class="layout">
    <section class="panel">
@@ -138,6 +163,7 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
     </div>
    </section>
   </div>
+  </section>
  </div>
 </main>
 </div>
@@ -165,12 +191,20 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
 </div></div>
 
 <div class="modal-backdrop hidden" id="productModal"><div class="modal">
- <div class="modalhead"><b>Add product to catalogue</b><button class="btn" data-close="productModal">Close</button></div>
+ <div class="modalhead"><b id="productModalTitle">Add product</b><button class="btn" data-close="productModal">Close</button></div>
  <div class="modalbody">
-  <div class="fields"><div class="field"><label>Product name *</label><input id="newProductName" placeholder="Enter product name"></div><div class="field"><label>SKU / Product code *</label><input id="newProductSku" placeholder="e.g. WW-001"></div></div>
-  <div class="fields" style="margin-top:12px"><div class="field"><label>Category *</label><select id="newProductCategory"><option value="">Select category</option><option>Juice & Pulp</option><option>Supplements</option><option>Tea</option><option>Food</option><option>Other</option></select></div><div class="field"><label>Selling price (₹)</label><input id="newProductPrice" type="number" min="0" step="0.01" placeholder="Enter price"></div></div>
-  <div class="fields" style="margin-top:12px"><div class="field"><label>HSN code</label><input id="newProductHsn" placeholder="Verified HSN code"></div><div class="field"><label>GST rate (%)</label><input id="newProductGst" type="number" min="0" max="100" step="0.01" placeholder="Verified rate"></div></div>
-  <div class="info" style="margin-top:12px">Enter HSN and GST only after verifying the applicable classification and rate. Product creation does not make the POS a statutory invoicing system.</div>
+  <div class="section-title">Basic information</div>
+  <div class="fields"><div class="field"><label>Product name *</label><input id="newProductName" placeholder="Enter product name"></div><div class="field"><label>SKU / Product code *</label><input id="newProductSku" placeholder="Unique internal code"></div></div>
+  <div class="fields" style="margin-top:12px"><div class="field"><label>Barcode</label><input id="newProductBarcode" placeholder="EAN / UPC / internal barcode"></div><div class="field"><label>Category *</label><select id="newProductCategory"><option value="">Select category</option><option>Juice & Pulp</option><option>Supplements</option><option>Tea</option><option>Food</option><option>Personal Care</option><option>Other</option></select></div></div>
+  <div class="fields" style="margin-top:12px"><div class="field"><label>Unit of measurement</label><select id="newProductUnit"><option value="piece">Piece</option><option value="bottle">Bottle</option><option value="box">Box</option><option value="pack">Pack</option><option value="kg">Kg</option><option value="g">Gram</option><option value="litre">Litre</option><option value="ml">ml</option><option value="unit">Unit</option></select></div><div class="field"><label>Product status</label><select id="newProductActive"><option value="true">Active</option><option value="false">Inactive</option></select></div></div>
+  <div class="section-title">Pricing</div>
+  <div class="fields three"><div class="field"><label>Purchase price (₹)</label><input id="newProductPurchase" type="number" min="0" step=".01" placeholder="0.00"></div><div class="field"><label>Selling price (₹)</label><input id="newProductPrice" type="number" min="0" step=".01" placeholder="0.00"></div><div class="field"><label>MRP (₹)</label><input id="newProductMrp" type="number" min="0" step=".01" placeholder="0.00"></div></div>
+  <div class="section-title">Tax and inventory setup</div>
+  <div class="fields three"><div class="field"><label>HSN / SAC</label><input id="newProductHsn" placeholder="Verified HSN"></div><div class="field"><label>GST rate (%)</label><input id="newProductGst" type="number" min="0" max="100" step=".01" placeholder="Verified rate"></div><div class="field"><label>Opening stock</label><input id="newProductStock" type="number" min="0" step=".001" placeholder="0"></div></div>
+  <div class="fields" style="margin-top:12px"><div class="field"><label>Low-stock alert threshold</label><input id="newProductReorder" type="number" min="0" step=".001" placeholder="Optional"></div><div class="field"><label>Product image URL (optional)</label><input id="newProductImage" type="url" placeholder="https://…"></div></div>
+  <div class="field" style="margin-top:12px"><label>Description / notes</label><textarea id="newProductDescription" rows="2" placeholder="Product details, pack size, internal notes…"></textarea></div>
+  <div class="info" style="margin-top:12px">Use verified HSN and GST classifications. Opening stock is recorded as product master information only; a formal inventory opening-balance transaction will be implemented in Inventory.</div>
+  <div id="productFormError" class="auth-message"></div>
  </div>
  <div class="modalfoot"><button class="btn" data-close="productModal">Cancel</button><button class="btn primary" id="saveNewProduct">Save product</button></div>
 </div></div>
@@ -190,7 +224,7 @@ import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
-  getFirestore, collection, doc, getDoc, getDocs, setDoc
+  getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -208,6 +242,7 @@ const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 let currentUser = null;
 let activeProfile = false;
+let editingProductSku = null;
 let cloudSyncTimer = null;
 const $=id=>document.getElementById(id);
 let products=[];
@@ -263,7 +298,7 @@ async function loadFromFirestore(){
  sales=salesSnap.docs.map(d=>d.data()).sort((a,b)=>String(b.created||"").localeCompare(String(a.created||"")));
  if(settingsSnap.exists())settings=settingsSnap.data();
  persistLocalOnly();
- renderProducts();renderCart();
+ renderProducts();renderCart();renderProductMaster();
  setCloudStatus("Cloud connected");
 }
 function persistLocalOnly(){
@@ -307,7 +342,84 @@ async function handleAuthState(user){
  }
 }
 
-function renderProducts(){let q=$("search").value.toLowerCase(),cat=$("category").value;$("products").innerHTML="";let visible=products.filter(p=>(!cat||p.category===cat)&&(`${p.name} ${p.sku}`.toLowerCase().includes(q)));visible.forEach(p=>{let i=products.indexOf(p),b=document.createElement("button");b.className="product";b.disabled=!(Number(p.price)>0);b.innerHTML=`<span class="sku">${p.sku}</span><b>${p.name}</b><span class="price">${Number(p.price)>0?money(p.price):"Price not set"}</span><span class="tag">${p.hsn&&p.gst!==null?"HSN "+p.hsn+" · GST "+p.gst+"%":"Tax setup pending"}</span>`;b.onclick=()=>add(i);$("products").appendChild(b)});$("emptyProducts").style.display=products.length===0?"block":"none"}
+function renderProducts(){let q=$("search").value.toLowerCase(),cat=$("category").value;$("products").innerHTML="";let visible=products.filter(p=>p.active!==false&&(!cat||p.category===cat)&&(`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(q)));visible.forEach(p=>{let i=products.indexOf(p),b=document.createElement("button");b.className="product";b.disabled=!(Number(p.price)>0);b.innerHTML=`<span class="sku">${p.sku}</span><b>${p.name}</b><span class="price">${Number(p.price)>0?money(p.price):"Price not set"}</span><span class="tag">${p.hsn&&p.gst!==null?"HSN "+p.hsn+" · GST "+p.gst+"%":"Tax setup pending"}</span>`;b.onclick=()=>add(i);$("products").appendChild(b)});$("emptyProducts").style.display=visible.length===0?"block":"none"}
+function renderProductMaster(){
+ const q=($("masterSearch")?.value||"").trim().toLowerCase(),mode=$("masterStatus")?.value||"active";
+ const rows=products.filter(p=>(mode==="all"||(mode==="active"?p.active!==false:p.active===false))&&(`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(q)));
+ $("masterRows").innerHTML=rows.map(p=>`<tr>
+  <td><strong>${escapeHtml(p.name)}</strong><div class="small muted">${escapeHtml(p.description||"")}</div></td>
+  <td>${escapeHtml(p.sku)}<div class="small muted">${escapeHtml(p.barcode||"—")}</div></td>
+  <td>${escapeHtml(p.category||"—")}<div class="small muted">${escapeHtml(p.unit||"piece")}</div></td>
+  <td>${p.purchasePrice==null?"—":money(p.purchasePrice)}</td><td>${p.price==null?"—":money(p.price)}</td><td>${p.mrp==null?"—":money(p.mrp)}</td>
+  <td>${escapeHtml(p.hsn||"—")}<div class="small muted">${p.gst==null?"GST —":"GST "+p.gst+"%"}</div></td>
+  <td>${p.openingStock??0}<div class="small muted">Alert: ${p.reorderLevel??"—"}</div></td>
+  <td><span class="${p.active===false?"pill-inactive":"pill-active"}">${p.active===false?"Inactive":"Active"}</span></td>
+  <td><div class="actions"><button class="btn" data-edit-product="${escapeHtml(p.sku)}">Edit</button><button class="btn ${p.active===false?"light":"danger"}" data-toggle-product="${escapeHtml(p.sku)}">${p.active===false?"Activate":"Deactivate"}</button></div></td>
+ </tr>`).join("");
+ $("masterEmpty").style.display=rows.length?"none":"block";
+ $("masterCount").textContent=`${rows.length} product${rows.length===1?"":"s"}`;
+ $("masterRows").querySelectorAll("[data-edit-product]").forEach(b=>b.onclick=()=>editProduct(b.dataset.editProduct));
+ $("masterRows").querySelectorAll("[data-toggle-product]").forEach(b=>b.onclick=()=>toggleProduct(b.dataset.toggleProduct));
+}
+function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function showView(view){
+ $("productMasterView").classList.toggle("hidden",view!=="products");
+ $("posView").classList.toggle("hidden",view!=="pos");
+ document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
+ const isPos=view==="pos";
+ document.querySelector(".topbar .crumb").textContent=isPos?"Wellwith OS / Sales":"Wellwith OS / Masters / Products";
+ document.querySelector(".topbar h1").textContent=isPos?"POS & Billing":"Product Master";
+ if(view==="products")renderProductMaster();
+}
+function productFormReset(){
+ editingProductSku=null;$("newProductSku").disabled=false;
+ $("productModalTitle").textContent="Add product";
+ $("saveNewProduct").textContent="Save product";
+ ["newProductName","newProductSku","newProductBarcode","newProductPrice","newProductPurchase","newProductMrp","newProductHsn","newProductGst","newProductStock","newProductReorder","newProductImage","newProductDescription"].forEach(id=>$(id).value="");
+ $("newProductCategory").value="";$("newProductUnit").value="piece";$("newProductActive").value="true";$("productFormError").textContent="";
+}
+function editProduct(sku){
+ const p=products.find(x=>x.sku===sku);if(!p)return;
+ editingProductSku=sku;$("productModalTitle").textContent="Edit product";$("saveNewProduct").textContent="Save changes";
+ $("newProductName").value=p.name||"";$("newProductSku").value=p.sku||"";$("newProductSku").disabled=true;
+ $("newProductBarcode").value=p.barcode||"";$("newProductCategory").value=p.category||"";$("newProductUnit").value=p.unit||"piece";$("newProductActive").value=String(p.active!==false);
+ $("newProductPurchase").value=p.purchasePrice??"";$("newProductPrice").value=p.price??"";$("newProductMrp").value=p.mrp??"";
+ $("newProductHsn").value=p.hsn||"";$("newProductGst").value=p.gst??"";$("newProductStock").value=p.openingStock??"";$("newProductReorder").value=p.reorderLevel??"";
+ $("newProductImage").value=p.imageUrl||"";$("newProductDescription").value=p.description||"";$("productFormError").textContent="";
+ open("productModal");
+}
+async function saveNewProduct(){
+ const name=$("newProductName").value.trim(),sku=$("newProductSku").value.trim().toUpperCase(),category=$("newProductCategory").value;
+ const getNum=id=>$(id).value===""?null:Number($(id).value);
+ const price=getNum("newProductPrice"),purchasePrice=getNum("newProductPurchase"),mrp=getNum("newProductMrp"),gst=getNum("newProductGst"),openingStock=getNum("newProductStock")??0,reorderLevel=getNum("newProductReorder");
+ const err=$("productFormError");err.textContent="";
+ if(!name||!sku||!category){err.textContent="Product name, SKU and category are required.";return}
+ if(products.some(p=>String(p.sku).toUpperCase()===sku&&p.sku!==editingProductSku)){err.textContent="This SKU already exists. Use a unique product code.";return}
+ for(const [label,n] of [["Purchase price",purchasePrice],["Selling price",price],["MRP",mrp],["GST",gst],["Opening stock",openingStock],["Low-stock threshold",reorderLevel]]){
+   if(n!==null&&(!Number.isFinite(n)||n<0||(label==="GST"&&n>100))){err.textContent=`Enter a valid ${label.toLowerCase()}.`;return}
+ }
+ const product={
+  ...(products.find(p=>p.sku===editingProductSku)||{}),name,sku,category,
+  barcode:$("newProductBarcode").value.trim(),unit:$("newProductUnit").value,
+  purchasePrice,price,mrp,hsn:$("newProductHsn").value.trim(),gst,
+  openingStock,reorderLevel,imageUrl:$("newProductImage").value.trim(),
+  description:$("newProductDescription").value.trim(),active:$("newProductActive").value==="true",
+  updatedAt:new Date().toISOString(),updatedBy:currentUser.uid
+ };
+ if(!editingProductSku)product.createdAt=new Date().toISOString();
+ try{
+   const id=String(sku).replace(/[^a-zA-Z0-9_-]/g,"_");
+   await setDoc(doc(db,"products",id),product,{merge:true});
+   if(editingProductSku){products=products.map(p=>p.sku===editingProductSku?product:p)}else products.push(product);
+   persistLocalOnly();renderProducts();renderCart();renderProductMaster();close("productModal");productFormReset();toast(editingProductSku?"Product updated in Firestore.":"Product saved to Firestore.");
+ }catch(e){console.error(e);err.textContent="Could not save to Firestore. Check connection and security rules."}
+}
+async function toggleProduct(sku){
+ const p=products.find(x=>x.sku===sku);if(!p)return;
+ const updated={...p,active:p.active===false,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid};
+ try{await setDoc(doc(db,"products",String(sku).replace(/[^a-zA-Z0-9_-]/g,"_")),updated,{merge:true});products=products.map(x=>x.sku===sku?updated:x);persistLocalOnly();renderProducts();renderCart();renderProductMaster();toast(updated.active?"Product activated.":"Product deactivated; history retained.");}
+ catch(e){console.error(e);toast("Could not update product status.")}
+}
 
 function saveNewProduct(){
  const name=$("newProductName").value.trim(),sku=$("newProductSku").value.trim().toUpperCase(),category=$("newProductCategory").value;
@@ -347,7 +459,7 @@ async function lookupGSTIN(){
  toast("GSTIN format validated. Live lookup is not connected yet.");
 }
 function open(id){$(id).classList.remove("hidden")}function close(id){$(id).classList.add("hidden")}
-function fillSettings(){ $("bizName").value=settings.bizName||"DURGA VENTURES";$("bizGstin").value=settings.bizGstin||"";$("bizAddress").value=settings.bizAddress||"";$("bizState").value=settings.bizState||"Karnataka";$("prefix").value=settings.prefix||"DV/26-27/";$("nextNumber").value=settings.nextNumber||1;$("productSettings").innerHTML=products.map((p,i)=>`<tr><td>${p.name}</td><td>${p.sku}</td><td><input type="number" min="0" step=".01" data-price="${i}" value="${p.price??""}" placeholder="Required"></td><td><input data-hsn="${i}" value="${p.hsn||""}" placeholder="HSN"></td><td><input type="number" min="0" max="100" step=".01" data-gst="${i}" value="${p.gst??""}" placeholder="%"></td></tr>`).join("")}
+function fillSettings(){ $("bizName").value=settings.bizName||"DURGA VENTURES";$("bizGstin").value=settings.bizGstin||"";$("bizAddress").value=settings.bizAddress||"";$("bizState").value=settings.bizState||"Karnataka";$("prefix").value=settings.prefix||"DV/26-27/";$("nextNumber").value=settings.nextNumber||1;$("productSettings").innerHTML=products.filter(p=>p.active!==false).map((p,i)=>`<tr><td>${p.name}</td><td>${p.sku}</td><td><input type="number" min="0" step=".01" data-price="${i}" value="${p.price??""}" placeholder="Required"></td><td><input data-hsn="${i}" value="${p.hsn||""}" placeholder="HSN"></td><td><input type="number" min="0" max="100" step=".01" data-gst="${i}" value="${p.gst??""}" placeholder="%"></td></tr>`).join("")}
 function saveSettings(){settings={bizName:$("bizName").value.trim(),bizGstin:$("bizGstin").value.trim().toUpperCase(),bizAddress:$("bizAddress").value.trim(),bizState:$("bizState").value.trim(),prefix:$("prefix").value.trim(),nextNumber:Math.max(1,Number($("nextNumber").value)||1)};$("productSettings").querySelectorAll("[data-price]").forEach(e=>products[+e.dataset.price].price=e.value===""?null:Number(e.value));$("productSettings").querySelectorAll("[data-hsn]").forEach(e=>products[+e.dataset.hsn].hsn=e.value.trim());$("productSettings").querySelectorAll("[data-gst]").forEach(e=>products[+e.dataset.gst].gst=e.value===""?null:Number(e.value));persist();renderProducts();renderCart();close("settingsModal");toast("POS settings saved and queued for cloud sync")}
 function snapshot(){return {id:Date.now(),type,customer:$("customerName").value.trim()||"Walk-in customer",mobile:$("mobile").value.trim(),gstin:$("gstin").value.trim(),legalName:$("legalName").value.trim(),tradeName:$("tradeName").value.trim(),address:$("address").value.trim(),supply:$("supplyState").value,items:cart.map(x=>({...x})),discount:Number($("discount").value)||0,payment:$("payment").value,splitUpi:Number($("splitUpi").value)||0,splitCash:Number($("splitCash").value)||0,total:calc().total,created:new Date().toISOString()}}
 function saveDraft(){if(!cart.length)return toast("Add at least one product.");drafts.unshift(snapshot());persist();toast("Draft saved. Cloud sync will run automatically when connected.")}
@@ -392,11 +504,16 @@ $("search").oninput=renderProducts;$("category").onchange=renderProducts;$("disc
 $("customerType").onclick=e=>{let b=e.target.closest("button[data-type]");if(b)updateType(b.dataset.type)};
 $("gstin").addEventListener("input",()=>{let v=validateGSTIN($("gstin").value);$("gstinStatus").textContent=v.message;$("gstinStatus").style.color=v.ok?"#805613":"#738078";});
 $("gstin").addEventListener("blur",lookupGSTIN);
-$("clearCart").onclick=()=>{cart=[];renderCart()};$("addProductBtn").onclick=()=>open("productModal");$("saveNewProduct").onclick=saveNewProduct;$("settingsBtn").onclick=()=>{fillSettings();open("settingsModal")};$("saveSettings").onclick=saveSettings;$("saveDraft").onclick=saveDraft;$("previewBtn").onclick=preview;$("historyBtn").onclick=showHistory;
+$("clearCart").onclick=()=>{cart=[];renderCart()};
+$("addProductBtn").onclick=()=>{productFormReset();open("productModal")};
+$("masterAddProductBtn").onclick=()=>{productFormReset();open("productModal")};
+$("saveNewProduct").onclick=saveNewProduct;
+$("masterSearch").oninput=renderProductMaster;$("masterStatus").onchange=renderProductMaster;
+document.querySelectorAll(".nav button[data-view]").forEach(b=>b.onclick=()=>showView(b.dataset.view));$("settingsBtn").onclick=()=>{fillSettings();open("settingsModal")};$("saveSettings").onclick=saveSettings;$("saveDraft").onclick=saveDraft;$("previewBtn").onclick=preview;$("historyBtn").onclick=showHistory;
 $("payment").onchange=()=>$("splitFields").classList.toggle("hidden",$("payment").value!=="Split payment");
 $("printA4").onclick=()=>printMode("a4");$("printThermal").onclick=()=>printMode("thermal");$("completeSale").onclick=finalizeSale;
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>close(b.dataset.close));
-renderProducts();renderCart();
+renderProducts();renderCart();renderProductMaster();showView("products");
 </script>
 </body>
 </html>
