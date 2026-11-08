@@ -28,7 +28,7 @@ main{min-width:0}.topbar{height:68px;background:#fff;border-bottom:1px solid var
 input,select,textarea{width:100%;border:1px solid #dce3dd;border-radius:7px;padding:10px 11px;background:#fff;color:var(--ink);outline:none}
 input:focus,select:focus,textarea:focus{border-color:#6b9a7d;box-shadow:0 0 0 3px #e7f1e9}
 label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
-.field{min-width:0}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.fields.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.field{min-width:0}.customer-picker{position:relative}.customer-results{position:absolute;z-index:30;top:100%;left:0;right:0;margin-top:4px;background:#fff;border:1px solid #dce5de;border-radius:9px;box-shadow:0 12px 28px rgba(20,50,35,.16);max-height:230px;overflow:auto}.customer-result{display:block;width:100%;border:0;border-bottom:1px solid #edf1ed;background:#fff;text-align:left;padding:10px 12px;color:var(--ink)}.customer-result:last-child{border-bottom:0}.customer-result:hover{background:#f1f7f2}.customer-result strong{display:block;font-size:12px}.customer-result span{display:block;font-size:10px;color:var(--muted);margin-top:2px}.customer-selected{color:var(--green);font-weight:650}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.fields.three{grid-template-columns:repeat(3,minmax(0,1fr))}
 .tabs{display:flex;gap:5px;background:#f1f4f1;padding:4px;border-radius:8px}.tabs button{flex:1;border:0;background:transparent;border-radius:6px;padding:8px;color:#68746c;font-weight:650}.tabs button.active{background:#fff;color:var(--green);box-shadow:0 1px 4px #00000012}
 .products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .product{border:1px solid var(--line);border-radius:9px;padding:12px;text-align:left;background:#fff;min-height:108px;display:flex;flex-direction:column;justify-content:space-between}
@@ -89,6 +89,65 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
 .module-tile em{display:block;font-size:10px;color:var(--amber);font-style:normal;margin-top:9px}
 @media(max-width:900px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.module-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.dashboard-grid,.module-tiles{grid-template-columns:1fr}.app{grid-template-columns:190px 1fr}.content{padding:16px}}
+
+/* v3.6 dedicated POS fullscreen workspace */
+html:fullscreen body{overflow:hidden}
+html:fullscreen .app{height:100vh;min-height:0;grid-template-columns:1fr}
+html:fullscreen .sidebar,html:fullscreen .topbar{display:none!important}
+html:fullscreen .content{height:100vh!important;max-width:none!important;margin:0!important;padding:10px 14px!important;overflow:hidden!important}
+html:fullscreen #posView{height:100%;min-height:0}
+html:fullscreen #posView>.toolbar{margin-bottom:8px}
+html:fullscreen #posView>.layout{height:calc(100% - 48px)}
+/* v3.4 POS single-screen workspace */
+@media (min-width:1051px){
+  body:has(#posView:not(.hidden)){overflow:hidden}
+  .content:has(#posView:not(.hidden)){padding:12px 18px 14px;max-width:none;height:calc(100vh - 68px);overflow:hidden}
+  #posView{height:100%;display:flex;flex-direction:column;min-height:0}
+  #posView>.toolbar{flex:0 0 auto;margin-bottom:10px;min-height:42px}
+  #posView>.toolbar .toolbar p{display:none}
+  #posView>.toolbar h2{font-size:18px!important}
+  #posView>.layout{flex:1;min-height:0;height:calc(100% - 52px);grid-template-columns:minmax(0,1.02fr) minmax(440px,.98fr);gap:12px;align-items:stretch}
+  #posView .layout>.panel{min-height:0;display:flex;flex-direction:column}
+  #posView .panel-head{padding:9px 12px;min-height:42px}
+  #posView .panel-body{padding:10px 12px;min-height:0}
+  #posView .layout>.panel:first-child .panel-body{display:flex;flex-direction:column;overflow:hidden}
+  #posView .searchrow{margin-bottom:8px;flex:0 0 auto}
+  #posView .products{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;overflow:auto;align-content:start;padding:1px}
+  #posView .product{min-height:82px;padding:8px}
+  #posView .product b{font-size:12px;margin:4px 0}
+  #posView .layout>.panel:last-child .panel-body{overflow:auto;scrollbar-width:thin}
+  #posView .section-title{margin:9px 0 6px;font-size:11px}
+  #posView .fields{gap:7px}
+  #posView label{font-size:10px;margin-bottom:3px}
+  #posView input,#posView select,#posView textarea{padding:7px 9px;font-size:12px;min-height:34px}
+  #posView textarea{min-height:48px}
+  #posView .small{font-size:10px}
+  #posView .field>.small{display:none}
+  #posView .info{padding:6px 9px;margin:6px 0;font-size:10px}
+  #posView #cartArea{max-height:112px;overflow:auto}
+  #posView .cart-empty{padding:12px 8px}
+  #posView .cart-table th{padding:4px;font-size:9px}
+  #posView .cart-table td{padding:5px 4px}
+  #posView .summary{margin-top:7px;padding-top:7px;gap:4px}
+  #posView .sumrow{font-size:11px}
+  #posView .sumrow.total{font-size:16px;padding-top:5px}
+  #posView .note{padding:6px 8px;margin:6px 0;font-size:10px}
+  #posView .footer-actions{margin-top:8px}
+  #posView .footer-actions .btn{padding:8px}
+  #posView .layout>.panel:last-child .panel-body>.small.muted{display:none}
+}
+@media (min-width:1051px) and (max-height:760px){
+  #posView .products{grid-template-columns:repeat(5,minmax(0,1fr))}
+  #posView .product{min-height:72px}
+  #posView .panel-head{padding:7px 11px}
+  #posView .panel-body{padding:8px 10px}
+  #posView .section-title{margin:7px 0 5px}
+  #posView #cartArea{max-height:86px}
+}
+
+
+/* Inventory overview */
+.inv-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 18px}.inv-kpi{background:#fff;border:1px solid var(--line);border-radius:11px;padding:16px}.inv-kpi span{display:block;color:var(--muted);font-size:12px}.inv-kpi strong{font-size:25px}.inv-filters{display:flex;gap:10px;margin-bottom:14px}.inv-filters input{flex:1}.inv-filters select{max-width:190px}.inv-table{width:100%;border-collapse:collapse;text-align:left}.inv-table th,.inv-table td{padding:12px;border-bottom:1px solid var(--line);font-size:12px}.inv-table th{color:var(--muted);background:#f8faf8}.inv-pill{display:inline-block;border-radius:30px;padding:4px 9px;background:#e8f4eb;color:#206344;font-size:11px;font-weight:700}.inv-pill.warn{background:#fff1d9;color:#85540c}.inv-pill.bad{background:#fbe8e6;color:#9b332c}@media(max-width:950px){.inv-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.inv-filters{flex-wrap:wrap}}
 </style>
 </head>
 <body>
@@ -129,6 +188,30 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
 <main>
  <header class="topbar"><div><div class="crumb">Wellwith OS / Sales</div><h1>POS & Billing</h1></div><div class="user"><span id="signedInEmail">Not signed in</span><span id="cloudStatus" class="cloud-indicator">● Connecting</span> &nbsp; <button class="btn" id="logoutBtn" style="padding:6px 9px;margin-left:8px">Sign out</button></div></header>
  <div class="content">
+  <section id="dashboardView">
+   <div class="toolbar"><div><h2 style="margin:0;font-size:20px">Business Dashboard</h2><p>Wellwith OS workspace overview and module launchpad.</p></div></div>
+   <div class="panel"><div class="panel-body">
+    <div class="fields three" style="margin-bottom:18px">
+     <div class="settings-card"><div class="small muted">Active products</div><strong id="dashProductCount" style="font-size:24px">0</strong></div>
+     <div class="settings-card"><div class="small muted">Workspace</div><strong style="font-size:18px">Connected</strong></div>
+     <div class="settings-card"><div class="small muted">Business</div><strong style="font-size:18px">DURGA VENTURES</strong></div>
+    </div>
+    <h3 style="margin:8px 0 12px">Modules</h3><div id="dashboardModules" class="products"></div>
+   </div></div>
+  </section>
+  <section id="moduleView" class="hidden">
+   <div class="toolbar"><div><h2 id="moduleHeading" style="margin:0;font-size:20px"></h2><p id="moduleDescription"></p></div></div>
+   <div class="panel"><div class="panel-head"><h2 id="modulePanelTitle"></h2></div><div class="panel-body"><div id="moduleTiles" class="products"></div></div></div>
+  </section>
+  <section id="inventoryView" class="hidden">
+    <div class="toolbar"><div><h2 style="margin:0;font-size:20px">Inventory management</h2><p>Stock ledger, batch tracking, receiving, adjustments and physical counts.</p></div><div class="toolbar-actions"><button class="btn" id="invRefresh">↻ Refresh</button><button class="btn" id="invCountBtn">Physical count</button><button class="btn primary" id="invMoveBtn">+ Stock movement</button></div></div>
+    <div class="info">Opening quantities shown from Product Master are legacy starting balances until you record an opening movement. Stock movements are stored in Firestore. POS auto-deduction is intentionally not enabled until sale posting is made atomic and server-verified.</div>
+    <div class="inv-kpis"><div class="inv-kpi"><span>Active products</span><strong id="invProducts">0</strong></div><div class="inv-kpi"><span>On-hand units</span><strong id="invUnits">0</strong></div><div class="inv-kpi"><span>Low / reorder</span><strong id="invLow">0</strong></div><div class="inv-kpi"><span>Expired / next 30 days</span><strong id="invExpiry">0</strong></div></div>
+    <div class="toolbar-actions" style="margin:12px 0;flex-wrap:wrap"><button class="btn light" data-invtab="stock">Stock overview</button><button class="btn" data-invtab="ledger">Stock ledger</button><button class="btn" data-invtab="counts">Physical counts</button><button class="btn" data-invtab="reorder">Reorder list</button></div>
+    <div class="panel"><div class="panel-body"><div class="inv-filters"><input id="invSearch" placeholder="Search product, barcode, category or batch"><select id="invFilter"><option value="all">All products</option><option value="low">Zero / low stock</option><option value="expiry">Expired / expiring soon</option><option value="missing">Quantity not set</option></select></div><div style="overflow:auto"><table class="inv-table"><thead><tr><th>Product</th><th>Barcode</th><th>On hand</th><th>Reserved</th><th>Available</th><th>Batch / expiry</th><th>Status</th></tr></thead><tbody id="invRows"></tbody></table></div><p class="small muted" id="invCount" style="margin:12px 0 0"></p><div id="invLedgerPanel" class="hidden" style="margin-top:18px"><h3>Recent stock movements</h3><div style="overflow:auto"><table class="inv-table"><thead><tr><th>Date</th><th>Product</th><th>Type</th><th>Batch</th><th>Qty change</th><th>Location</th><th>Reference / note</th></tr></thead><tbody id="invLedgerRows"></tbody></table></div></div><div id="invCountsPanel" class="hidden" style="margin-top:18px"><h3>Physical count history</h3><div id="invCountRows"></div></div><div id="invReorderPanel" class="hidden" style="margin-top:18px"><h3>Reorder suggestions</h3><div id="invReorderRows"></div></div></div></div>
+    <div id="invMoveModal" class="modal-backdrop hidden"><div class="modal"><div class="modalhead"><strong>Record stock movement</strong><button class="btn" data-invclose>✕</button></div><div class="modalbody"><div class="fields"><div><label>Product *</label><select id="imProduct"></select></div><div><label>Movement type *</label><select id="imType"><option value="opening">Opening stock</option><option value="inward">Purchase / stock inward</option><option value="outward">Stock outward</option><option value="adjustment">Adjustment (+/-)</option><option value="damage">Damaged / expired write-off</option><option value="return">Customer return (saleable)</option></select></div><div><label>Quantity *</label><input id="imQty" type="number" min="0.001" step="0.001"></div><div><label>Batch number</label><input id="imBatch" placeholder="Batch / lot"></div><div><label>Manufacturing date</label><input id="imMfg" type="date"></div><div><label>Expiry date</label><input id="imExpiry" type="date"></div><div><label>Location</label><input id="imLocation" value="Mangaluru Store"></div><div><label>Supplier / source</label><input id="imSupplier" placeholder="Supplier name"></div><div><label>Reference</label><input id="imRef" placeholder="Invoice / GRN / reason ref"></div><div><label>Unit cost (₹)</label><input id="imCost" type="number" min="0" step="0.01"></div></div><label style="margin-top:12px">Notes</label><textarea id="imNotes" rows="2" placeholder="Reason, damage details or receiving notes"></textarea><div class="note">Outward and damage movements reduce stock. Adjustment quantity may be positive or negative. Stock cannot become negative.</div></div><div class="modalfoot"><button class="btn" data-invclose>Cancel</button><button class="btn primary" id="imSave">Save movement</button></div></div></div>
+    <div id="invCountModal" class="modal-backdrop hidden"><div class="modal"><div class="modalhead"><strong>Physical stock count</strong><button class="btn" data-invclose>✕</button></div><div class="modalbody"><div class="fields"><div><label>Product *</label><select id="icProduct"></select></div><div><label>Batch (optional)</label><input id="icBatch"></div><div><label>Actual counted quantity *</label><input id="icQty" type="number" min="0" step="0.001"></div><div><label>Location</label><input id="icLocation" value="Mangaluru Store"></div></div><label style="margin-top:12px">Count notes / discrepancy reason *</label><textarea id="icNotes" rows="2" placeholder="Explain shortage or excess"></textarea></div><div class="modalfoot"><button class="btn" data-invclose>Cancel</button><button class="btn primary" id="icSave">Save count & adjustment</button></div></div></div>
+  </section>
   <section id="productMasterView">
    <div class="toolbar"><div><h2 style="margin:0;font-size:20px">Product Master</h2><p>Central product catalogue shared with POS. Create and maintain product details here.</p></div><div class="toolbar-actions"><button class="btn primary" id="masterAddProductBtn">+ Add product</button></div></div>
    <div class="panel">
@@ -137,30 +220,40 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
       <div style="display:flex;gap:9px;flex:1;min-width:240px"><input id="masterSearch" placeholder="Search name, SKU or barcode…"><select id="masterStatus" style="max-width:150px"><option value="active">Active products</option><option value="all">All products</option><option value="inactive">Inactive products</option></select></div>
       <span class="small muted" id="masterCount">0 products</span>
      </div>
-     <div style="overflow:auto"><table class="product-master-table"><thead><tr><th>Product</th><th>SKU / Barcode</th><th>Category</th><th>Purchase</th><th>Selling</th><th>MRP</th><th>HSN / GST</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody id="masterRows"></tbody></table></div>
+     <div style="overflow:auto"><table class="product-master-table"><thead><tr><th>Product</th><th>Barcode</th><th>Category</th><th>Purchase</th><th>Selling</th><th>MRP</th><th>HSN / GST</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody id="masterRows"></tbody></table></div>
      <div id="masterEmpty" class="product-master-empty">No products yet. Add your first product to build the catalogue.</div>
     </div>
    </div>
   </section>
   <section id="posView" class="hidden">
-  <div class="toolbar"><div><h2 style="margin:0;font-size:20px">New sale</h2><p>Create retail or GST business invoice previews. Cloud records are test records until server-side invoice finalization is deployed.</p></div><div class="toolbar-actions"><button class="btn" id="settingsBtn">⚙ POS Settings</button><button class="btn" id="historyBtn">Sales history</button></div></div>
+  <div class="toolbar"><div><h2 style="margin:0;font-size:20px">New sale</h2><p>Create retail or GST business invoice previews. Cloud records are test records until server-side invoice finalization is deployed.</p></div><div class="toolbar-actions"><button class="btn" id="posFullscreenBtn" type="button" title="Use POS in full screen">⛶ Full screen</button><button class="btn" id="settingsBtn">⚙ POS Settings</button><button class="btn" id="historyBtn">Sales history</button></div></div>
   <div class="layout">
    <section class="panel">
     <div class="panel-head"><h2>1. Select products</h2><div style="display:flex;align-items:center;gap:8px"><span class="status">Product master · editable</span><button class="btn primary" id="addProductBtn" style="padding:7px 10px">+ Add product</button></div></div>
     <div class="panel-body">
-     <div class="searchrow"><input id="search" placeholder="Search product name or SKU…"><select id="category" style="max-width:170px"><option value="">All products</option><option>Juice & Pulp</option><option>Supplements</option><option>Tea</option><option>Food</option><option>Other</option></select></div>
+     <div class="searchrow" style="flex-wrap:wrap"><input id="posBarcodeInput" placeholder="Scan EAN / barcode and press Enter" style="flex:1 1 220px;border-color:#b8cfc0"><button class="btn" id="posCameraScan" type="button" title="Scan using camera">▣ Camera</button><input id="search" placeholder="Search product name or category…" style="flex:1 1 180px"><select id="category" style="max-width:150px"><option value="">All products</option><option>Juice & Pulp</option><option>Supplements</option><option>Tea</option><option>Food</option><option>Other</option></select></div>
      <div class="products" id="products"></div><div id="emptyProducts" class="cart-empty" style="display:none;margin-top:12px">No products in your catalogue yet.<br><span class="small">Use “Add product” to create your first product.</span></div>
     </div>
    </section>
    <section class="panel">
-    <div class="panel-head"><h2>2. Current bill</h2><button class="btn danger" id="clearCart">Clear</button></div>
+    <div class="panel-head"><h2>2. Current bill</h2><div style="display:flex;gap:6px"><button class="btn" id="holdBill" type="button">Ⅱ Hold bill</button><button class="btn danger" id="clearCart">Clear</button></div></div>
     <div class="panel-body">
      <div id="cartArea"></div>
-     <div class="section-title">Customer & invoice type</div>
-     <div class="tabs" id="customerType"><button class="active" data-type="retail">Retail</button><button data-type="b2b">GST B2B</button></div>
+     <div class="section-title">Sales channel</div>
+     <div class="field"><label>Choose business model</label><select id="salesChannel"><option value="shop">Shop Sales · Retail / Walk-in</option><option value="b2b">B2B Sales · Wholesale / Distribution</option><option value="online">Online Sales · D2C</option></select></div>
+     <div id="channelHelp" class="info" style="margin-top:8px">Shop sales: walk-in retail billing and immediate payment.</div>
+     <div class="fields" style="margin-top:10px">
+      <div class="field"><label>Sale source *</label><select id="saleSource" required></select><div class="small muted" style="margin-top:4px">Where did this order or customer come from?</div></div>
+      <div class="field hidden" id="otherSourceWrap"><label>Specify source *</label><input id="otherSource" maxlength="100" placeholder="Enter source name"></div>
+     </div>
+     <div id="onlineFields" class="hidden" style="margin-top:10px"><div class="fields">
+      <div class="field"><label>Courier / delivery charge (₹)</label><input id="deliveryCharge" type="number" min="0" step=".01" value="0"></div>
+      <div class="field"><label>Packaging cost (₹)</label><input id="packagingCost" type="number" min="0" step=".01" value="0"></div>
+     </div></div>
+     <div class="section-title">Customer details</div>
      <div class="fields" style="margin-top:12px">
-      <div class="field"><label>Customer / business name</label><input id="customerName" placeholder="Walk-in customer"></div>
-      <div class="field"><label>Mobile number</label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="10-digit mobile"></div>
+      <div class="field customer-picker"><label>Mobile number <span class="small muted">· Primary customer search</span></label><input id="mobile" inputmode="numeric" maxlength="10" placeholder="Search by mobile number" autocomplete="off"><div id="customerResults" class="customer-results hidden"></div><div id="customerMatchStatus" class="small muted" style="margin-top:5px">Enter a mobile number to find an existing customer.</div></div>
+      <div class="field"><label>Customer / business name</label><input id="customerName" placeholder="Customer or business name" autocomplete="off"></div>
      </div>
      <div id="b2bFields" class="hidden" style="margin-top:11px">
       <div class="fields">
@@ -200,10 +293,20 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
     <div class="field"><label>Legal business name</label><input id="bizName" value="DURGA VENTURES"></div>
     <div class="field" style="margin-top:9px"><label>GSTIN</label><input id="bizGstin" placeholder="Enter registered GSTIN"></div>
     <div class="field" style="margin-top:9px"><label>Registered address</label><textarea id="bizAddress" rows="3" placeholder="Registered business address"></textarea></div>
-    <div class="fields" style="margin-top:9px"><div class="field"><label>State</label><input id="bizState" value="Karnataka"></div><div class="field"><label>Invoice prefix</label><input id="prefix" value="DV/26-27/"></div></div>
+    <div class="field" style="margin-top:9px"><label>State</label><input id="bizState" value="Karnataka"></div>
    </div>
    <div class="settings-card"><h3>Invoice controls</h3>
-    <div class="field"><label>Default invoice series starting number</label><input id="nextNumber" type="number" min="1" value="1"></div>
+    <div class="fields three">
+     <div class="field"><label>Shop invoice prefix</label><input id="shopPrefix" value="INV-" placeholder="INV-"><div class="small muted">Example: INV-0001</div></div>
+     <div class="field"><label>B2B invoice prefix</label><input id="b2bPrefix" value="B2B-" placeholder="B2B-"><div class="small muted">Example: B2B-0001</div></div>
+     <div class="field"><label>Online invoice prefix</label><input id="onlinePrefix" value="ONL-" placeholder="ONL-"><div class="small muted">Example: ONL-0001</div></div>
+    </div>
+    <div class="small muted" style="margin-top:8px">You can change these prefixes at any time. Each sales channel keeps its own next invoice number; changing a prefix does not reset the counter.</div>
+    <div class="fields three" style="margin-top:9px">
+     <div class="field"><label>Shop next number</label><input id="shopNextNumber" type="number" min="1" value="1"></div>
+     <div class="field"><label>B2B next number</label><input id="b2bNextNumber" type="number" min="1" value="1"></div>
+     <div class="field"><label>Online next number</label><input id="onlineNextNumber" type="number" min="1" value="1"></div>
+    </div>
     <div class="info">Do not issue official invoices until your GSTIN, registered address, invoice series, HSN codes and applicable GST rates have been verified with your accountant.</div>
     <div class="small muted">This browser-only build stores settings on this device. It is not a secure shared company database. GSTIN lookup requires an authorized verification provider and a deployed backend function; no live provider is connected in this prototype.</div>
    </div>
@@ -218,14 +321,21 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
  <div class="modalhead"><b id="productModalTitle">Add product</b><button class="btn" data-close="productModal">Close</button></div>
  <div class="modalbody">
   <div class="section-title">Basic information</div>
-  <div class="fields"><div class="field"><label>Product name *</label><input id="newProductName" placeholder="Enter product name"></div><div class="field"><label>SKU / Product code *</label><input id="newProductSku" placeholder="Unique internal code"></div></div>
-  <div class="fields" style="margin-top:12px"><div class="field"><label>Barcode</label><input id="newProductBarcode" placeholder="EAN / UPC / internal barcode"></div><div class="field"><label>Category *</label><select id="newProductCategory"><option value="">Select category</option><option>Juice & Pulp</option><option>Supplements</option><option>Tea</option><option>Food</option><option>Personal Care</option><option>Other</option></select></div></div>
+  <div class="fields"><div class="field"><label>Product name *</label><input id="newProductName" placeholder="Enter product name"></div><div class="field"><label>Category *</label><div style="display:flex;gap:8px;align-items:center"><select id="newProductCategory" style="flex:1;min-width:0"><option value="">Select category</option></select><button type="button" class="btn" id="addCategoryBtn">+ Add</button></div><div id="newCategoryInline" class="hidden" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input id="newCategoryName" type="text" placeholder="New category name" style="flex:1;min-width:0;padding:9px 10px"><button type="button" class="btn primary" id="saveCategoryBtn" style="padding:8px 11px">Save</button><button type="button" class="btn" id="cancelCategoryBtn" style="padding:8px 10px">×</button></div><div class="small muted" style="margin-top:5px">Choose an existing category or add a new one.</div></div></div>
+  <div class="fields" style="margin-top:12px"><div class="field"><label>EAN / Barcode</label><div style="display:flex;gap:7px"><input id="newProductBarcode" placeholder="Scan or enter EAN / UPC" style="flex:1;min-width:0"><button type="button" class="btn" id="productCameraScan">▣ Scan</button></div><div class="small muted" style="margin-top:4px">Use a USB/Bluetooth scanner or camera. Barcode is used for quick POS billing.</div></div><div class="field"><label>Unit of measurement</label><select id="newProductUnit"><option value="piece">Piece</option><option value="bottle">Bottle</option><option value="box">Box</option><option value="pack">Pack</option><option value="kg">Kg</option><option value="g">Gram</option><option value="litre">Litre</option><option value="ml">ml</option><option value="unit">Unit</option></select></div></div>
   <div class="fields" style="margin-top:12px"><div class="field"><label>Unit of measurement</label><select id="newProductUnit"><option value="piece">Piece</option><option value="bottle">Bottle</option><option value="box">Box</option><option value="pack">Pack</option><option value="kg">Kg</option><option value="g">Gram</option><option value="litre">Litre</option><option value="ml">ml</option><option value="unit">Unit</option></select></div><div class="field"><label>Product status</label><select id="newProductActive"><option value="true">Active</option><option value="false">Inactive</option></select></div></div>
   <div class="section-title">Pricing</div>
   <div class="fields three"><div class="field"><label>Purchase price (₹)</label><input id="newProductPurchase" type="number" min="0" step=".01" placeholder="0.00"></div><div class="field"><label>Selling price (₹)</label><input id="newProductPrice" type="number" min="0" step=".01" placeholder="0.00"></div><div class="field"><label>MRP (₹)</label><input id="newProductMrp" type="number" min="0" step=".01" placeholder="0.00"></div></div>
   <div class="section-title">Tax and inventory setup</div>
   <div class="fields three"><div class="field"><label>HSN / SAC</label><input id="newProductHsn" placeholder="Verified HSN"></div><div class="field"><label>GST rate (%)</label><input id="newProductGst" type="number" min="0" max="100" step=".01" placeholder="Verified rate"></div><div class="field"><label>Opening stock</label><input id="newProductStock" type="number" min="0" step=".001" placeholder="0"></div></div>
   <div class="fields" style="margin-top:12px"><div class="field"><label>Low-stock alert threshold</label><input id="newProductReorder" type="number" min="0" step=".001" placeholder="Optional"></div><div class="field"><label>Product image URL (optional)</label><input id="newProductImage" type="url" placeholder="https://…"></div></div>
+  <div class="section-title">Batch details</div>
+  <div class="fields three">
+   <div class="field"><label>Batch / Lot number</label><input id="newProductBatch" placeholder="Enter batch number"></div>
+   <div class="field"><label>Manufacturing date</label><input id="newProductMfg" type="date"></div>
+   <div class="field"><label>Expiry date</label><input id="newProductExpiry" type="date"></div>
+  </div>
+  <div class="small muted" style="margin-top:6px">These fields record the current batch details for this product. Multiple-batch stock allocation will be handled in Inventory.</div>
   <div class="field" style="margin-top:12px"><label>Description / notes</label><textarea id="newProductDescription" rows="2" placeholder="Product details, pack size, internal notes…"></textarea></div>
   <div class="info" style="margin-top:12px">Use verified HSN and GST classifications. Opening stock is recorded as product master information only; a formal inventory opening-balance transaction will be implemented in Inventory.</div>
   <div id="productFormError" class="auth-message"></div>
@@ -241,6 +351,7 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
  <div class="modalhead"><b>Sales register</b><button class="btn" data-close="historyModal">Close</button></div>
  <div class="modalbody" id="historyBody"></div>
 </div></div>
+<div class="modal-backdrop hidden" id="barcodeScannerModal"><div class="modal" style="max-width:520px"><div class="modalhead"><b>Scan product barcode</b><button class="btn" id="closeBarcodeScanner">Close</button></div><div class="modalbody"><video id="barcodeVideo" playsinline muted style="width:100%;max-height:310px;background:#111;border-radius:10px;object-fit:cover"></video><div id="barcodeScanStatus" class="info">Allow camera access and hold the barcode inside the frame.</div><div class="small muted">Camera scanning requires HTTPS and a supported browser. A USB/Bluetooth barcode scanner also works by typing into the barcode field and pressing Enter.</div></div></div></div>
 <div id="toast" class="toast hidden"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
@@ -248,7 +359,7 @@ import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
-  getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc
+  getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, runTransaction, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -270,11 +381,15 @@ let editingProductSku = null;
 let cloudSyncTimer = null;
 const $=id=>document.getElementById(id);
 let products=[];
-let cart=[],type="retail",drafts=[],sales=[],settings=JSON.parse(localStorage.getItem("wwos_settings")||"{}");
+let inventoryMovements=[];
+let inventoryCounts=[];
+let customers=[];
+let cart=[],type="retail",salesChannel="shop",drafts=[],sales=[],settings=JSON.parse(localStorage.getItem("wwos_settings")||"{}");
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
 function toast(s){$("toast").textContent=s;$("toast").classList.remove("hidden");setTimeout(()=>$("toast").classList.add("hidden"),2600)}
 function persist(){
  localStorage.setItem("wwos_products",JSON.stringify(products));
+ localStorage.setItem("wwos_customers",JSON.stringify(customers));
  localStorage.setItem("wwos_drafts",JSON.stringify(drafts));
  localStorage.setItem("wwos_sales",JSON.stringify(sales));
  localStorage.setItem("wwos_settings",JSON.stringify(settings));
@@ -300,6 +415,9 @@ async function syncToFirestore(){
    const id=String(p.sku||p.name).replace(/[^a-zA-Z0-9_-]/g,"_");
    writes.push(setDoc(doc(db,"products",id),{...p,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid},{merge:true}));
  }
+ for(const c of customers){
+   writes.push(setDoc(doc(db,"customers",String(c.customerId)),{...c,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid},{merge:true}));
+ }
  for(const d of drafts){
    writes.push(setDoc(doc(db,"drafts",String(d.id)),{...d,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid},{merge:true}));
  }
@@ -312,21 +430,41 @@ async function syncToFirestore(){
 }
 async function loadFromFirestore(){
  setCloudStatus("Loading cloud data…");
- const [productSnap,draftSnap,salesSnap,settingsSnap]=await Promise.all([
-   getDocs(collection(db,"products")),getDocs(collection(db,"drafts")),
+ // Load core workspace data separately from optional inventory data.
+ // A missing inventory rule must not prevent an otherwise valid user from signing in.
+ const [productSnap,customerSnap,draftSnap,salesSnap,settingsSnap]=await Promise.all([
+   getDocs(collection(db,"products")),getDocs(collection(db,"customers")),getDocs(collection(db,"drafts")),
    getDocs(collection(db,"sales")),getDoc(doc(db,"settings","pos"))
  ]);
+ let movementSnap={docs:[]},countSnap={docs:[]},inventoryReadWarning=false;
+ try{
+   [movementSnap,countSnap]=await Promise.all([
+     getDocs(collection(db,"inventoryMovements")),getDocs(collection(db,"inventoryCounts"))
+   ]);
+ }catch(inventoryError){
+   inventoryReadWarning=true;
+   console.warn("Inventory collections could not be read. Check Firestore rules for inventoryMovements and inventoryCounts.",inventoryError);
+ }
  // Never seed demo products. An empty Firestore catalogue stays empty.
- products=productSnap.docs.map(d=>d.data());
+ products=productSnap.docs.map(d=>({...d.data(),productId:d.id}));
+ customers=customerSnap.docs.map(d=>({...d.data(),customerId:d.id}));
  drafts=draftSnap.docs.map(d=>d.data()).sort((a,b)=>String(b.created||"").localeCompare(String(a.created||"")));
  sales=salesSnap.docs.map(d=>d.data()).sort((a,b)=>String(b.created||"").localeCompare(String(a.created||"")));
  if(settingsSnap.exists())settings=settingsSnap.data();
+ inventoryMovements=movementSnap.docs.map(d=>({...d.data(),id:d.id}));
+ inventoryCounts=countSnap.docs.map(d=>({...d.data(),id:d.id}));
  persistLocalOnly();
- renderProducts();renderCart();renderProductMaster();
- setCloudStatus("Cloud connected");
+ renderProducts();renderCart();renderProductMaster();renderInventory();updateCategoryOptions();refreshCustomerSuggestions();
+ if(inventoryReadWarning){
+   setCloudStatus("Cloud connected · Inventory permissions need attention",true);
+   toast("Workspace loaded. Inventory data is unavailable until Firestore inventory rules are published.");
+ }else{
+   setCloudStatus("Cloud connected");
+ }
 }
 function persistLocalOnly(){
  localStorage.setItem("wwos_products",JSON.stringify(products));
+ localStorage.setItem("wwos_customers",JSON.stringify(customers));
  localStorage.setItem("wwos_drafts",JSON.stringify(drafts));
  localStorage.setItem("wwos_sales",JSON.stringify(sales));
  localStorage.setItem("wwos_settings",JSON.stringify(settings));
@@ -337,7 +475,7 @@ async function handleSignIn(){
  if(!email||!password){$("authMessage").textContent="Enter your email and password.";return}
  $("loginBtn").disabled=true;$("loginBtn").textContent="Signing in…";
  try{await signInWithEmailAndPassword(auth,email,password);}
- catch(err){$("authMessage").textContent=err.code==="auth/invalid-credential"?"Email or password is incorrect.":(err.message||"Sign-in failed.");}
+ catch(err){console.error("Firebase sign-in failed:",err);$("authMessage").textContent="Sign-in failed ("+(err?.code||"unknown-error")+"): "+(err?.message||"Please try again.");}
  finally{$("loginBtn").disabled=false;$("loginBtn").textContent="Sign in securely"}
 }
 async function handleAuthState(user){
@@ -360,25 +498,29 @@ async function handleAuthState(user){
    activeProfile=true;
    await loadFromFirestore();
  }catch(err){
-   console.error(err);$("authScreen").style.display="flex";document.querySelector(".app").classList.add("auth-locked");
-   $("authMessage").textContent="Unable to load your workspace. Check Firestore database setup and security rules.";
-   setCloudStatus("Database access blocked",true);
+   console.error("Wellwith OS authentication/workspace initialization failed:",err);
+   $("authScreen").style.display="flex";document.querySelector(".app").classList.add("auth-locked");
+   const code=err?.code||"unknown-error";
+   const detail=err?.message||String(err);
+   $("authMessage").textContent="Sign-in succeeded, but workspace initialization failed ("+code+"): "+detail;
+   setCloudStatus("Workspace initialization failed",true);
  }
 }
 
-function renderProducts(){let q=$("search").value.toLowerCase(),cat=$("category").value;$("products").innerHTML="";let visible=products.filter(p=>p.active!==false&&(!cat||p.category===cat)&&(`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(q)));visible.forEach(p=>{let i=products.indexOf(p),b=document.createElement("button");b.className="product";b.disabled=!(Number(p.price)>0);b.innerHTML=`<span class="sku">${p.sku}</span><b>${p.name}</b><span class="price">${Number(p.price)>0?money(p.price):"Price not set"}</span><span class="tag">${p.hsn&&p.gst!==null?"HSN "+p.hsn+" · GST "+p.gst+"%":"Tax setup pending"}</span>`;b.onclick=()=>add(i);$("products").appendChild(b)});$("emptyProducts").style.display=visible.length===0?"block":"none"}
+function renderProducts(){let q=$("search").value.toLowerCase(),cat=$("category").value;$("products").innerHTML="";let visible=products.filter(p=>p.active!==false&&(!cat||p.category===cat)&&(`${p.name} ${p.barcode||""} ${p.category||""}`.toLowerCase().includes(q)));visible.forEach(p=>{let i=products.indexOf(p),b=document.createElement("button");b.className="product";b.disabled=!(Number(p.price)>0);b.innerHTML=`${p.imageUrl?`<img src="${escapeHtml(p.imageUrl)}" alt="" style="width:100%;height:76px;object-fit:contain;border-radius:6px;margin-bottom:6px" onerror="this.style.display='none'">`:""}<b>${escapeHtml(p.name)}</b><span class="price">${Number(p.price)>0?money(p.price):"Price not set"}</span><span class="tag">${p.hsn&&p.gst!==null?"HSN "+p.hsn+" · GST "+p.gst+"%":"Tax setup pending"}</span>`;b.onclick=()=>add(i);$("products").appendChild(b)});$("emptyProducts").style.display=visible.length===0?"block":"none"}
 function renderProductMaster(){
  const q=($("masterSearch")?.value||"").trim().toLowerCase(),mode=$("masterStatus")?.value||"active";
- const rows=products.filter(p=>(mode==="all"||(mode==="active"?p.active!==false:p.active===false))&&(`${p.name} ${p.sku} ${p.barcode||""}`.toLowerCase().includes(q)));
+ const rows=products.filter(p=>(mode==="all"||(mode==="active"?p.active!==false:p.active===false))&&(`${p.name} ${p.barcode||""} ${p.category||""}`.toLowerCase().includes(q)));
  $("masterRows").innerHTML=rows.map(p=>`<tr>
-  <td><strong>${escapeHtml(p.name)}</strong><div class="small muted">${escapeHtml(p.description||"")}</div></td>
-  <td>${escapeHtml(p.sku)}<div class="small muted">${escapeHtml(p.barcode||"—")}</div></td>
+  <td><div style="display:flex;align-items:center;gap:9px">${p.imageUrl?`<img src="${escapeHtml(p.imageUrl)}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:7px;border:1px solid var(--line)" onerror="this.style.display='none'">`:""}<div><strong>${escapeHtml(p.name)}</strong><div class="small muted">${escapeHtml(p.description||"")}</div></div></div></td>
+  <td>${escapeHtml(p.barcode||"—")}</td>
   <td>${escapeHtml(p.category||"—")}<div class="small muted">${escapeHtml(p.unit||"piece")}</div></td>
   <td>${p.purchasePrice==null?"—":money(p.purchasePrice)}</td><td>${p.price==null?"—":money(p.price)}</td><td>${p.mrp==null?"—":money(p.mrp)}</td>
   <td>${escapeHtml(p.hsn||"—")}<div class="small muted">${p.gst==null?"GST —":"GST "+p.gst+"%"}</div></td>
   <td>${p.openingStock??0}<div class="small muted">Alert: ${p.reorderLevel??"—"}</div></td>
+  <td>${escapeHtml(p.batchNumber||"—")}<div class="small muted">Mfg: ${escapeHtml(p.manufacturingDate||"—")} · Exp: ${escapeHtml(p.expiryDate||"—")}</div></td>
   <td><span class="${p.active===false?"pill-inactive":"pill-active"}">${p.active===false?"Inactive":"Active"}</span></td>
-  <td><div class="actions"><button class="btn" data-edit-product="${escapeHtml(p.sku)}">Edit</button><button class="btn ${p.active===false?"light":"danger"}" data-toggle-product="${escapeHtml(p.sku)}">${p.active===false?"Activate":"Deactivate"}</button></div></td>
+  <td><div class="actions"><button class="btn" data-edit-product="${escapeHtml(p.productId)}">Edit</button><button class="btn ${p.active===false?"light":"danger"}" data-toggle-product="${escapeHtml(p.productId)}">${p.active===false?"Activate":"Deactivate"}</button></div></td>
  </tr>`).join("");
  $("masterEmpty").style.display=rows.length?"none":"block";
  $("masterCount").textContent=`${rows.length} product${rows.length===1?"":"s"}`;
@@ -401,85 +543,173 @@ const moduleInfo={
 function showView(view){
  const valid=["dashboard","pos","products",...Object.keys(moduleInfo).filter(x=>x!=="dashboard")];
  if(!valid.includes(view))view="dashboard";
- ["dashboardView","moduleView","productMasterView","posView"].forEach(id=>$(id).classList.add("hidden"));
- if(view==="dashboard")$("dashboardView").classList.remove("hidden");
- else if(view==="products")$("productMasterView").classList.remove("hidden");
- else if(view==="pos")$("posView").classList.remove("hidden");
+ ["dashboardView","moduleView","productMasterView","posView","inventoryView"].forEach(id=>{const el=$(id);if(el)el.classList.add("hidden");});
+ if(view==="dashboard"){if($("dashboardView"))$("dashboardView").classList.remove("hidden");}
+ else if(view==="inventory"){if($("inventoryView"))$("inventoryView").classList.remove("hidden");renderInventory();}
+ else if(view==="products"){if($("productMasterView"))$("productMasterView").classList.remove("hidden");}
+ else if(view==="pos"){if($("posView"))$("posView").classList.remove("hidden");}
  else{
-  const info=moduleInfo[view];$("moduleView").classList.remove("hidden");
-  $("moduleHeading").textContent=info.title;$("moduleDescription").textContent=info.desc;$("modulePanelTitle").textContent=info.title+" workspace";
-  $("moduleTiles").innerHTML=info.tiles.map(t=>`<div class="module-tile"><strong>${escapeHtml(t[0])}</strong><span>${escapeHtml(t[1])}</span><em>Foundation only · Not active</em></div>`).join("");
+  const info=moduleInfo[view];if($("moduleView"))$("moduleView").classList.remove("hidden");
+  if($("moduleHeading"))$("moduleHeading").textContent=info.title;
+  if($("moduleDescription"))$("moduleDescription").textContent=info.desc;
+  if($("modulePanelTitle"))$("modulePanelTitle").textContent=info.title+" workspace";
+  if($("moduleTiles"))$("moduleTiles").innerHTML=info.tiles.map(t=>`<div class="module-tile"><strong>${escapeHtml(t[0])}</strong><span>${escapeHtml(t[1])}</span><em>Foundation only · Not active</em></div>`).join("");
  }
  document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
  const labels={dashboard:"Business Dashboard",pos:"POS & Billing",products:"Product Master"};
- const title=labels[view]||moduleInfo[view].title;
- document.querySelector(".topbar .crumb").textContent="Wellwith OS / "+title;
- document.querySelector(".topbar h1").textContent=title;
- if(view==="products")renderProductMaster();
- if(view==="dashboard")renderDashboard();
+ const title=labels[view]||(moduleInfo[view]&&moduleInfo[view].title)||"Business Dashboard";
+ const crumb=document.querySelector(".topbar .crumb"),heading=document.querySelector(".topbar h1");
+ if(crumb)crumb.textContent="Wellwith OS / "+title;if(heading)heading.textContent=title;
+ if(view==="products")renderProductMaster();if(view==="inventory")renderInventory();if(view==="dashboard")renderDashboard();
+ if(view==="pos"){renderProducts();renderCart();}
 }
 function renderDashboard(){
- $("dashProductCount").textContent=products.filter(p=>p.active!==false).length;
+ if(!$("dashboardModules"))return;
+ if($("dashProductCount"))$("dashProductCount").textContent=products.filter(p=>p.active!==false).length;
  const items=[["dashboard","Dashboard","Business overview"],["pos","POS & Billing","Retail and B2B billing"],["products","Product Master","Central product catalogue"],["crm","CRM","Customers and follow-ups"],["books","Books & Accounts","Ledgers and accounting"],["inventory","Inventory","Stock and movements"],["purchases","Purchases","Procurement and GRN"],["expenses","Expenses","Expense management"],["hr","HR & Payroll","People and payroll"],["marketing","Marketing","Campaigns and leads"],["reports","Reports & Analytics","Business intelligence"],["admin","Administration","Users and settings"]];
  $("dashboardModules").innerHTML=items.map(x=>`<button class="module-tile" data-open-module="${x[0]}"><strong>${x[1]}</strong><span>${x[2]}</span><em>${["dashboard","pos","products"].includes(x[0])?"Core workspace":"Foundation only"}</em></button>`).join("");
  $("dashboardModules").querySelectorAll("[data-open-module]").forEach(b=>b.onclick=()=>showView(b.dataset.openModule));
 }
 function productFormReset(){
- editingProductSku=null;$("newProductSku").disabled=false;
- $("productModalTitle").textContent="Add product";
- $("saveNewProduct").textContent="Save product";
- ["newProductName","newProductSku","newProductBarcode","newProductPrice","newProductPurchase","newProductMrp","newProductHsn","newProductGst","newProductStock","newProductReorder","newProductImage","newProductDescription"].forEach(id=>$(id).value="");
+ editingProductSku=null;
+ $("productModalTitle").textContent="Add product";$("saveNewProduct").textContent="Save product";
+ ["newProductName","newProductBarcode","newProductPrice","newProductPurchase","newProductMrp","newProductHsn","newProductGst","newProductStock","newProductReorder","newProductImage","newProductDescription","newProductBatch","newProductMfg","newProductExpiry"].forEach(id=>$(id).value="");
  $("newProductCategory").value="";$("newProductUnit").value="piece";$("newProductActive").value="true";$("productFormError").textContent="";
+ updateCategoryOptions();hideAddCategory();
 }
-function editProduct(sku){
- const p=products.find(x=>x.sku===sku);if(!p)return;
- editingProductSku=sku;$("productModalTitle").textContent="Edit product";$("saveNewProduct").textContent="Save changes";
- $("newProductName").value=p.name||"";$("newProductSku").value=p.sku||"";$("newProductSku").disabled=true;
- $("newProductBarcode").value=p.barcode||"";$("newProductCategory").value=p.category||"";$("newProductUnit").value=p.unit||"piece";$("newProductActive").value=String(p.active!==false);
+function getCategoryList(){
+ const saved=Array.isArray(settings.categories)?settings.categories:[];
+ return [...new Set([...saved,...products.map(p=>String(p.category||"").trim())].filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+}
+function updateCategoryOptions(selected=""){
+ const cats=getCategoryList();
+ $("newProductCategory").innerHTML='<option value="">Select category</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+ $("newProductCategory").value=selected&&cats.includes(selected)?selected:"";
+ const filter=$("category");
+ if(filter){const current=filter.value;filter.innerHTML='<option value="">All products</option>'+cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");filter.value=current;}
+}
+function showAddCategory(){
+ const panel=$("newCategoryInline");panel.classList.remove("hidden");$("newCategoryName").value="";$("newCategoryName").focus();
+}
+function hideAddCategory(){$("newCategoryInline").classList.add("hidden");$("newCategoryName").value="";}
+function addProductCategory(){
+ const name=$("newCategoryName").value.trim();
+ if(!name){toast("Enter a category name.");$("newCategoryName").focus();return;}
+ const existing=getCategoryList().find(c=>c.toLowerCase()===name.toLowerCase());
+ if(existing){updateCategoryOptions(existing);hideAddCategory();toast("That category already exists.");return;}
+ settings.categories=[...getCategoryList(),name].sort((a,b)=>a.localeCompare(b));
+ updateCategoryOptions(name);persist();hideAddCategory();toast("New category added and synced to settings.");
+}
+function editProduct(productId){
+ const p=products.find(x=>x.productId===productId);if(!p)return;
+ editingProductSku=productId;$("productModalTitle").textContent="Edit product";$("saveNewProduct").textContent="Save changes";
+ $("newProductName").value=p.name||"";$("newProductBarcode").value=p.barcode||"";
+ $("newProductUnit").value=p.unit||"piece";$("newProductActive").value=String(p.active!==false);
  $("newProductPurchase").value=p.purchasePrice??"";$("newProductPrice").value=p.price??"";$("newProductMrp").value=p.mrp??"";
  $("newProductHsn").value=p.hsn||"";$("newProductGst").value=p.gst??"";$("newProductStock").value=p.openingStock??"";$("newProductReorder").value=p.reorderLevel??"";
- $("newProductImage").value=p.imageUrl||"";$("newProductDescription").value=p.description||"";$("productFormError").textContent="";
- open("productModal");
+ $("newProductImage").value=p.imageUrl||"";$("newProductDescription").value=p.description||"";
+ $("newProductBatch").value=p.batchNumber||"";$("newProductMfg").value=p.manufacturingDate||"";$("newProductExpiry").value=p.expiryDate||"";
+ $("productFormError").textContent="";
+ updateCategoryOptions(p.category||"");open("productModal");
 }
 async function saveNewProduct(){
- const name=$("newProductName").value.trim(),sku=$("newProductSku").value.trim().toUpperCase(),category=$("newProductCategory").value;
+ const name=$("newProductName").value.trim(),category=$("newProductCategory").value.trim();
  const getNum=id=>$(id).value===""?null:Number($(id).value);
  const price=getNum("newProductPrice"),purchasePrice=getNum("newProductPurchase"),mrp=getNum("newProductMrp"),gst=getNum("newProductGst"),openingStock=getNum("newProductStock")??0,reorderLevel=getNum("newProductReorder");
- const err=$("productFormError");err.textContent="";
- if(!name||!sku||!category){err.textContent="Product name, SKU and category are required.";return}
- if(products.some(p=>String(p.sku).toUpperCase()===sku&&p.sku!==editingProductSku)){err.textContent="This SKU already exists. Use a unique product code.";return}
+ const imageUrl=$("newProductImage").value.trim(),batchNumber=$("newProductBatch").value.trim(),manufacturingDate=$("newProductMfg").value,expiryDate=$("newProductExpiry").value,err=$("productFormError");err.textContent="";
+ if(!name||!category){err.textContent="Product name and category are required.";return}
+ if(manufacturingDate&&expiryDate&&expiryDate<manufacturingDate){err.textContent="Expiry date cannot be earlier than manufacturing date.";return}
+ if((batchNumber||manufacturingDate||expiryDate)&&!(batchNumber&&manufacturingDate&&expiryDate)){err.textContent="For batch tracking, enter batch number, manufacturing date and expiry date.";return}
+ if(imageUrl){try{const u=new URL(imageUrl);if(!["http:","https:"].includes(u.protocol))throw new Error();}catch{err.textContent="Enter a valid image URL beginning with https:// or http://.";return}}
  for(const [label,n] of [["Purchase price",purchasePrice],["Selling price",price],["MRP",mrp],["GST",gst],["Opening stock",openingStock],["Low-stock threshold",reorderLevel]]){
    if(n!==null&&(!Number.isFinite(n)||n<0||(label==="GST"&&n>100))){err.textContent=`Enter a valid ${label.toLowerCase()}.`;return}
  }
+ const barcode=$("newProductBarcode").value.trim();
+ const duplicate=barcode&&products.find(p=>p.barcode&&String(p.barcode).trim().toLowerCase()===barcode.toLowerCase()&&p.productId!==editingProductSku);
+ if(duplicate){err.textContent=`This barcode is already assigned to ${duplicate.name}.`;return;}
+ const existing=products.find(p=>p.productId===editingProductSku);
+ settings.categories=[...new Set([...getCategoryList(),category])].sort((a,b)=>a.localeCompare(b));
  const product={
-  ...(products.find(p=>p.sku===editingProductSku)||{}),name,sku,category,
-  barcode:$("newProductBarcode").value.trim(),unit:$("newProductUnit").value,
-  purchasePrice,price,mrp,hsn:$("newProductHsn").value.trim(),gst,
-  openingStock,reorderLevel,imageUrl:$("newProductImage").value.trim(),
+  ...(existing||{}),name,category,barcode,unit:$("newProductUnit").value,
+  purchasePrice,price,mrp,hsn:$("newProductHsn").value.trim(),gst,openingStock,reorderLevel,imageUrl,
+  batchNumber,manufacturingDate,expiryDate,
   description:$("newProductDescription").value.trim(),active:$("newProductActive").value==="true",
   updatedAt:new Date().toISOString(),updatedBy:currentUser.uid
  };
- if(!editingProductSku)product.createdAt=new Date().toISOString();
  try{
-   const id=String(sku).replace(/[^a-zA-Z0-9_-]/g,"_");
-   await setDoc(doc(db,"products",id),product,{merge:true});
-   if(editingProductSku){products=products.map(p=>p.sku===editingProductSku?product:p)}else products.push(product);
-   persistLocalOnly();renderProducts();renderCart();renderProductMaster();close("productModal");productFormReset();toast(editingProductSku?"Product updated in Firestore.":"Product saved to Firestore.");
+   let productId=editingProductSku;
+   if(productId){await setDoc(doc(db,"products",productId),product,{merge:true});}
+   else{
+     const ref=doc(collection(db,"products"));productId=ref.id;
+     product.productId=productId;product.createdAt=new Date().toISOString();
+     await setDoc(ref,product);
+   }
+   product.productId=productId;
+   if(editingProductSku)products=products.map(p=>p.productId===editingProductSku?product:p);else products.push(product);
+   persistLocalOnly();renderProducts();renderCart();renderProductMaster();updateCategoryOptions();close("productModal");productFormReset();
+   toast(editingProductSku?"Product updated in Firestore.":"Product saved to Firestore.");
  }catch(e){console.error(e);err.textContent="Could not save to Firestore. Check connection and security rules."}
 }
-async function toggleProduct(sku){
- const p=products.find(x=>x.sku===sku);if(!p)return;
+async function toggleProduct(productId){
+ const p=products.find(x=>x.productId===productId);if(!p)return;
  const updated={...p,active:p.active===false,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid};
- try{await setDoc(doc(db,"products",String(sku).replace(/[^a-zA-Z0-9_-]/g,"_")),updated,{merge:true});products=products.map(x=>x.sku===sku?updated:x);persistLocalOnly();renderProducts();renderCart();renderProductMaster();toast(updated.active?"Product activated.":"Product deactivated; history retained.");}
+ try{await setDoc(doc(db,"products",productId),updated,{merge:true});products=products.map(x=>x.productId===productId?updated:x);persistLocalOnly();renderProducts();renderCart();renderProductMaster();toast(updated.active?"Product activated.":"Product deactivated; history retained.");}
  catch(e){console.error(e);toast("Could not update product status.")}
 }
 
-function add(i){let p=products[i],item=cart.find(x=>x.sku===p.sku);if(item)item.qty++;else cart.push({...p,qty:1});renderCart()}
+function add(i){let p=products[i],item=cart.find(x=>x.productId===p.productId);if(item)item.qty++;else cart.push({...p,qty:1});renderCart()}
+let barcodeStream=null,barcodeFrame=0,barcodeTarget="pos";
+function normalizedBarcode(v){return String(v||"").trim().replace(/[\s-]/g,"").toUpperCase()}
+function handleScannedBarcode(raw,target="pos"){
+ const code=normalizedBarcode(raw);if(!code)return false;
+ if(target==="product"){$("newProductBarcode").value=code;toast("Barcode captured. Save the product to store it.");stopBarcodeCamera();return true;}
+ const match=products.find(p=>p.active!==false&&normalizedBarcode(p.barcode)===code);
+ if(!match){toast(`Barcode ${code} is not assigned to an active product. Add it in Product Master first.`);$("posBarcodeInput").select();return false;}
+ if(!(Number(match.price)>0)){toast(`${match.name} has no selling price. Set it in Product Master.`);return false;}
+ add(products.indexOf(match));$("posBarcodeInput").value="";$("posBarcodeInput").focus();toast(`${match.name} added to bill.`);return true;
+}
+async function startBarcodeCamera(target){
+ barcodeTarget=target;const modal=$("barcodeScannerModal"),video=$("barcodeVideo"),status=$("barcodeScanStatus");
+ if(!("BarcodeDetector" in window)){toast("Camera barcode scanning is not supported in this browser. Use a USB/Bluetooth scanner instead.");return;}
+ if(!navigator.mediaDevices?.getUserMedia){toast("Camera access requires HTTPS and browser permission.");return;}
+ try{
+  const detector=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e","code_128","itf","qr_code"]});
+  barcodeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});video.srcObject=barcodeStream;modal.classList.remove("hidden");await video.play();status.textContent="Camera active — hold a barcode steady in front of the camera.";
+  const scan=async()=>{if(!barcodeStream)return;try{const codes=await detector.detect(video);if(codes.length){handleScannedBarcode(codes[0].rawValue,barcodeTarget);return;}}catch(e){}barcodeFrame=requestAnimationFrame(scan);};scan();
+ }catch(e){console.error(e);status.textContent="Could not access the camera. Check browser permission and try again.";modal.classList.remove("hidden");}
+}
+function stopBarcodeCamera(){if(barcodeFrame)cancelAnimationFrame(barcodeFrame);barcodeFrame=0;if(barcodeStream){barcodeStream.getTracks().forEach(t=>t.stop());barcodeStream=null;}const v=$("barcodeVideo");if(v)v.srcObject=null;$("barcodeScannerModal").classList.add("hidden");}
 function calc(){let taxable=0,tax=0;cart.forEach(x=>{let gross=x.price*x.qty,base=x.gst===null?gross:gross/(1+x.gst/100);taxable+=base;tax+=gross-base});let discount=Math.max(0,Number($("discount").value)||0),net=Math.max(0,taxable+tax-discount),taxableAfter=Math.max(0,taxable-discount),taxAfter=taxable>0?tax*(taxableAfter/taxable):0;return {taxable:taxableAfter,tax:taxAfter,total:net,discount}}
-function renderCart(){let area=$("cartArea");if(!cart.length){area.innerHTML='<div class="cart-empty">Your cart is empty.<br><span class="small">Choose products from the catalogue to start a bill.</span></div>'}else{area.innerHTML=`<table class="cart-table"><thead><tr><th>Item</th><th>Qty</th><th>Amount</th></tr></thead><tbody>${cart.map((x,i)=>`<tr><td><div class="itemname">${x.name}</div><div class="itemmeta">${x.sku} · ${x.gst===null?"GST not set":x.gst+"% GST"}</div></td><td><div class="qty"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></td><td>${money(x.price*x.qty)}<div class="itemmeta"><a href="#" data-remove="${i}" style="color:#a33b32">Remove</a></div></td></tr>`).join("")}</tbody></table>`}
+function renderCart(){let area=$("cartArea");if(!cart.length){area.innerHTML='<div class="cart-empty">Your cart is empty.<br><span class="small">Choose products from the catalogue to start a bill.</span></div>'}else{area.innerHTML=`<table class="cart-table"><thead><tr><th>Item</th><th>Qty</th><th>Amount</th></tr></thead><tbody>${cart.map((x,i)=>`<tr><td><div class="itemname">${x.name}</div><div class="itemmeta">${x.category||"Product"} · ${x.gst===null?"GST not set":x.gst+"% GST"}</div></td><td><div class="qty"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></td><td>${money(x.price*x.qty)}<div class="itemmeta"><a href="#" data-remove="${i}" style="color:#a33b32">Remove</a></div></td></tr>`).join("")}</tbody></table>`}
 area.querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>{cart[+b.dataset.inc].qty++;renderCart()});area.querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>{let x=cart[+b.dataset.dec];x.qty--;if(x.qty<=0)cart.splice(+b.dataset.dec,1);renderCart()});area.querySelectorAll("[data-remove]").forEach(b=>b.onclick=e=>{e.preventDefault();cart.splice(+b.dataset.remove,1);renderCart()});
 let c=calc(),local=type==="retail"||$("supplyState").value==="29";$("summary").innerHTML=`<div class="sumrow"><span>Taxable value</span><b>${money(c.taxable)}</b></div><div class="sumrow"><span>${local?"CGST + SGST":"IGST"} (included in line prices where configured)</span><b>${money(c.tax)}</b></div><div class="sumrow"><span>Discount</span><b>− ${money(c.discount)}</b></div><div class="sumrow total"><span>Grand total</span><span>${money(c.total)}</span></div>`;
 let incomplete=cart.some(x=>x.gst===null||!x.hsn);$("taxNotice").classList.toggle("hidden",!incomplete);$("previewBtn").disabled=!cart.length}
+const channelSources={
+ shop:["Walk-in / Passing by","Google Maps / Search","Instagram","Facebook / Meta Ads","WhatsApp","Referral","Existing customer","Signboard / Outdoor","Event / Promotion","Other"],
+ b2b:["Field sales visit","Sales representative","Referral","Incoming enquiry","WhatsApp","Telecalling","Existing retailer / Reorder","Trade event","Instagram / Facebook","Other"],
+ online:["WhatsApp","Telecalling","Meta Ads","Instagram organic","Facebook organic","Google Search","Website","Referral","Repeat customer","Other"]
+};
+function updateSaleSource(){
+ const isOther=$("saleSource").value==="Other";
+ $("otherSourceWrap").classList.toggle("hidden",!isOther);
+ if(!isOther)$("otherSource").value="";
+}
+function saleSourceValue(){
+ return $("saleSource").value==="Other"?$("otherSource").value.trim():$("saleSource").value;
+}
+function updateSalesChannel(channel){
+ salesChannel=channel;
+ const sourceSelect=$("saleSource");
+ sourceSelect.innerHTML='<option value="">Select source</option>'+channelSources[channel].map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+ updateSaleSource();
+ const help={shop:"Shop sales: walk-in retail billing and immediate payment.",b2b:"B2B sales: retailer / distributor billing, GSTIN, bulk orders and credit tracking.",online:"Online sales: D2C orders from WhatsApp, telecalling, Meta Ads and other online sources."};
+ $("channelHelp").textContent=help[channel];
+ $("onlineFields").classList.toggle("hidden",channel!=="online");
+ if(channel==="b2b")updateType("b2b");else updateType("retail");
+ $("customerName").placeholder=channel==="shop"?"Walk-in customer":channel==="b2b"?"Retailer / business name":"Customer name";
+ $("payment").value=channel==="b2b"?"Credit":"UPI";
+ renderCart();
+}
 function updateType(t){type=t;document.querySelectorAll("#customerType button").forEach(b=>b.classList.toggle("active",b.dataset.type===t));$("b2bFields").classList.toggle("hidden",t!=="b2b");renderCart()}
 function validateGSTIN(value){
  const gst=value.trim().toUpperCase();
@@ -501,40 +731,184 @@ async function lookupGSTIN(){
  toast("GSTIN format validated. Live lookup is not connected yet.");
 }
 function open(id){$(id).classList.remove("hidden")}function close(id){$(id).classList.add("hidden")}
-function fillSettings(){ $("bizName").value=settings.bizName||"DURGA VENTURES";$("bizGstin").value=settings.bizGstin||"";$("bizAddress").value=settings.bizAddress||"";$("bizState").value=settings.bizState||"Karnataka";$("prefix").value=settings.prefix||"DV/26-27/";$("nextNumber").value=settings.nextNumber||1;$("productSettings").innerHTML=products.filter(p=>p.active!==false).map((p,i)=>`<tr><td>${p.name}</td><td>${p.sku}</td><td><input type="number" min="0" step=".01" data-price="${i}" value="${p.price??""}" placeholder="Required"></td><td><input data-hsn="${i}" value="${p.hsn||""}" placeholder="HSN"></td><td><input type="number" min="0" max="100" step=".01" data-gst="${i}" value="${p.gst??""}" placeholder="%"></td></tr>`).join("")}
-function saveSettings(){settings={bizName:$("bizName").value.trim(),bizGstin:$("bizGstin").value.trim().toUpperCase(),bizAddress:$("bizAddress").value.trim(),bizState:$("bizState").value.trim(),prefix:$("prefix").value.trim(),nextNumber:Math.max(1,Number($("nextNumber").value)||1)};$("productSettings").querySelectorAll("[data-price]").forEach(e=>products[+e.dataset.price].price=e.value===""?null:Number(e.value));$("productSettings").querySelectorAll("[data-hsn]").forEach(e=>products[+e.dataset.hsn].hsn=e.value.trim());$("productSettings").querySelectorAll("[data-gst]").forEach(e=>products[+e.dataset.gst].gst=e.value===""?null:Number(e.value));persist();renderProducts();renderCart();close("settingsModal");toast("POS settings saved and queued for cloud sync")}
-function snapshot(){return {id:Date.now(),type,customer:$("customerName").value.trim()||"Walk-in customer",mobile:$("mobile").value.trim(),gstin:$("gstin").value.trim(),legalName:$("legalName").value.trim(),tradeName:$("tradeName").value.trim(),address:$("address").value.trim(),supply:$("supplyState").value,items:cart.map(x=>({...x})),discount:Number($("discount").value)||0,payment:$("payment").value,splitUpi:Number($("splitUpi").value)||0,splitCash:Number($("splitCash").value)||0,total:calc().total,created:new Date().toISOString()}}
-function saveDraft(){if(!cart.length)return toast("Add at least one product.");drafts.unshift(snapshot());persist();toast("Draft saved. Cloud sync will run automatically when connected.")}
-function buildInvoice(s){let taxTotal=0,taxable=0;let lines=s.items.map(x=>{let gross=x.price*x.qty,base=x.gst===null?gross:gross/(1+x.gst/100),t=gross-base;taxTotal+=t;taxable+=base;return {...x,gross,base,tax:t}});let isLocal=s.type==="retail"||s.supply==="29",num=s.invoiceNo||("TEST-PREVIEW/"+String(settings.nextNumber||1).padStart(4,"0"));return `<div class="rhead"><h1>${settings.bizName||"DURGA VENTURES"}</h1><div>${settings.bizAddress||"Registered address not configured"}</div><div>GSTIN: ${settings.bizGstin||"NOT CONFIGURED"}</div><h2 style="margin:12px 0 0">SALES INVOICE PREVIEW</h2><div class="tiny">LOCAL TEST RECORD · NOT A VALID GST TAX INVOICE · ${num}</div></div><div class="rbox"><b>Bill to:</b> ${s.type==="b2b"?(s.legalName||s.customer):s.customer}<br>${s.type==="b2b"&&s.tradeName?"Trade name: "+s.tradeName+"<br>":""}Mobile: ${s.mobile||"—"}<br>${s.type==="b2b"?"GSTIN: "+(s.gstin||"—")+"<br>Address: "+(s.address||"—"):"Retail customer"}<br>Place of supply: ${isLocal?"Karnataka":"Other state"}</div><div class="tiny">Date: ${new Date().toLocaleString("en-IN")} &nbsp; Payment: ${s.payment}</div><table><thead><tr><th>Item / HSN</th><th>Qty</th><th>Rate</th><th class="rnum">Amount</th></tr></thead><tbody>${lines.map(x=>`<tr><td>${x.name}<br><span class="tiny">HSN ${x.hsn||"NOT SET"} · GST ${x.gst??"NOT SET"}%</span></td><td>${x.qty}</td><td>${money(x.price)}</td><td class="rnum">${money(x.gross)}</td></tr>`).join("")}</tbody></table><div class="rbox"><div>Taxable value: ${money(Math.max(0,taxable-s.discount))}</div><div>${isLocal?"CGST + SGST":"IGST"}: ${money(taxTotal)}</div><div>Discount: ${money(s.discount)}</div><div class="rtotal">Grand total: ${money(s.total)}</div></div><p class="tiny">This is a preview generated by a local prototype. It is not a valid tax invoice. Verify HSN, GST rate, tax split, business particulars, invoice series and statutory requirements before issuing invoices.</p>`}
-function preview(){if(!cart.length)return;let s=snapshot();$("previewBody").innerHTML=buildInvoice(s);open("previewModal")}
+function fillSettings(){ $("bizName").value=settings.bizName||"DURGA VENTURES";$("bizGstin").value=settings.bizGstin||"";$("bizAddress").value=settings.bizAddress||"";$("bizState").value=settings.bizState||"Karnataka";
+ $("shopPrefix").value=settings.shopPrefix||settings.prefix||"INV-";
+ $("b2bPrefix").value=settings.b2bPrefix||"B2B-";
+ $("onlinePrefix").value=settings.onlinePrefix||"ONL-";
+ $("shopNextNumber").value=settings.shopNextNumber||settings.nextNumber||1;
+ $("b2bNextNumber").value=settings.b2bNextNumber||1;
+ $("onlineNextNumber").value=settings.onlineNextNumber||1;
+ $("productSettings").innerHTML=products.filter(p=>p.active!==false).map((p,i)=>`<tr><td>${p.name}</td><td>${p.sku}</td><td><input type="number" min="0" step=".01" data-price="${i}" value="${p.price??""}" placeholder="Required"></td><td><input data-hsn="${i}" value="${p.hsn||""}" placeholder="HSN"></td><td><input type="number" min="0" max="100" step=".01" data-gst="${i}" value="${p.gst??""}" placeholder="%"></td></tr>`).join("")}
+function saveSettings(){const prefixes=[ ["Shop",$("shopPrefix").value.trim()], ["B2B",$("b2bPrefix").value.trim()], ["Online",$("onlinePrefix").value.trim()] ];const empty=prefixes.find(x=>!x[1]);if(empty){toast(empty[0]+" invoice prefix cannot be blank.");return}settings={...settings,bizName:$("bizName").value.trim(),bizGstin:$("bizGstin").value.trim().toUpperCase(),bizAddress:$("bizAddress").value.trim(),bizState:$("bizState").value.trim(),
+ shopPrefix:$("shopPrefix").value.trim(),b2bPrefix:$("b2bPrefix").value.trim(),onlinePrefix:$("onlinePrefix").value.trim(),
+ shopNextNumber:Math.max(1,Number($("shopNextNumber").value)||1),b2bNextNumber:Math.max(1,Number($("b2bNextNumber").value)||1),onlineNextNumber:Math.max(1,Number($("onlineNextNumber").value)||1)};$("productSettings").querySelectorAll("[data-price]").forEach(e=>products[+e.dataset.price].price=e.value===""?null:Number(e.value));$("productSettings").querySelectorAll("[data-hsn]").forEach(e=>products[+e.dataset.hsn].hsn=e.value.trim());$("productSettings").querySelectorAll("[data-gst]").forEach(e=>products[+e.dataset.gst].gst=e.value===""?null:Number(e.value));persist();renderProducts();renderCart();close("settingsModal");toast("POS settings saved and queued for cloud sync")}
+function customerNameOf(c){return String(c.displayName||c.customerName||c.name||c.businessName||c.tradeName||c.legalName||c.customerDetails?.name||c.contactDetails?.name||"").trim()}
+function digitsOnly(v){return String(v??"").replace(/\D/g,"")}
+function collectCustomerPhoneValues(value,out=[],depth=0){
+ if(value===null||value===undefined||depth>5)return out;
+ if(typeof value==="string"||typeof value==="number"){
+  const d=digitsOnly(value);if(d.length>=7&&d.length<=15)out.push(d);return out;
+ }
+ if(Array.isArray(value)){value.forEach(v=>collectCustomerPhoneValues(v,out,depth+1));return out}
+ if(typeof value==="object"){
+  for(const [key,v] of Object.entries(value)){
+   if(/mobile|phone|contact|whats|tel|number/i.test(key))collectCustomerPhoneValues(v,out,depth+1);
+   else if(v&&typeof v==="object")collectCustomerPhoneValues(v,out,depth+1);
+  }
+ }
+ return out;
+}
+function customerPhoneNumbers(c){
+ const vals=collectCustomerPhoneValues(c,[]);
+ const id=digitsOnly(c.customerId||c.id||"");if(id.length>=7&&id.length<=15)vals.push(id);
+ return [...new Set(vals)];
+}
+function customerMobileOf(c){
+ const nums=customerPhoneNumbers(c);
+ // Prefer a 10-digit Indian mobile; otherwise return the most plausible stored number.
+ return nums.find(n=>n.length===10)||nums.find(n=>n.length===12&&n.startsWith("91"))?.slice(-10)||nums[0]||"";
+}
+function customerPhoneSearchText(c){return customerPhoneNumbers(c).join(" ")}
+function customerGstinOf(c){return String(c.gstin||c.GSTIN||"").trim().toUpperCase()}
+function renderCustomerResults(query,mode="auto"){
+ const box=$("customerResults");if(!box)return;
+ const raw=String(query||"").trim(),q=raw.toLowerCase(),qDigits=digitsOnly(raw);
+ if(!raw){box.classList.add("hidden");box.innerHTML="";return}
+ const mobileMode=mode==="mobile"||(mode==="auto"&&qDigits.length>=3&&qDigits.length>=q.replace(/\D/g,"").length);
+ const matches=customers.filter(c=>{
+  if(mobileMode){
+   if(qDigits.length<3)return false;
+   return customerPhoneNumbers(c).some(n=>n.includes(qDigits)||n.slice(-10).includes(qDigits));
+  }
+  return [customerNameOf(c),customerGstinOf(c),c.legalName||"",c.tradeName||"",c.customerId||""].some(v=>String(v).toLowerCase().includes(q));
+ }).slice(0,12);
+ if(!matches.length){box.innerHTML=`<div class="small muted" style="padding:12px">No saved customer found for ${mobileMode?"mobile "+escapeHtml(raw):escapeHtml(raw)}. Check the saved customer record or continue as a new customer.</div>`;box.classList.remove("hidden");return}
+ box.innerHTML=matches.map(c=>`<button type="button" class="customer-result" data-customer-index="${customers.indexOf(c)}"><strong>${escapeHtml(customerNameOf(c)||"Unnamed customer")}</strong><span>${escapeHtml(customerMobileOf(c)||"No mobile saved")}${customerGstinOf(c)?" · GSTIN "+escapeHtml(customerGstinOf(c)):""}${c.address?" · "+escapeHtml(c.address):""}</span></button>`).join("");
+ box.classList.remove("hidden");
+}
+function selectCustomer(c){
+ if(!c)return;
+ $("customerName").value=customerNameOf(c);
+ $("customerName").dataset.selectedCustomer=c.customerId||c.id||"";
+ $("mobile").value=customerMobileOf(c);
+ $("gstin").value=customerGstinOf(c);
+ $("legalName").value=c.legalName||"";
+ $("tradeName").value=c.tradeName||"";
+ $("address").value=c.address||"";
+ const status=$("customerMatchStatus");status.textContent="Saved customer selected"+(customerMobileOf(c)?" · "+customerMobileOf(c):" · No mobile number on file");status.className="small customer-selected";
+ $("customerResults").classList.add("hidden");
+}
+function refreshCustomerSuggestions(){
+ // Keep the picker backed by the latest Firestore customer records.
+ const box=$("customerResults");if(box)box.classList.add("hidden");
+}
+function fillCustomerDetails(){
+ const mobile=digitsOnly($("mobile").value),gstin=$("gstin").value.trim().toUpperCase(),name=$("customerName").value.trim().toLowerCase();
+ let c=null;
+ // Mobile search has priority: never select a name match when a mobile query is present.
+ if(mobile.length>=3)c=customers.find(x=>customerPhoneNumbers(x).some(n=>n===mobile||(mobile.length===10&&n.slice(-10)===mobile)));
+ else if(gstin)c=customers.find(x=>customerGstinOf(x)===gstin);
+ else if(name)c=customers.find(x=>customerNameOf(x).toLowerCase()===name);
+ if(c)selectCustomer(c);
+}
+async function upsertCustomerFromSale(s){
+ const mobile=String(s.mobile||"").replace(/\D/g,"");
+ const gstin=String(s.gstin||"").trim().toUpperCase();
+ const displayName=String(s.customer||"").trim();
+ if(!mobile&&!gstin)return null;
+ const existing=customers.find(c=>(mobile&&c.mobile===mobile)||(gstin&&c.gstin===gstin));
+ const customerId=existing?.customerId||(mobile?`mob_${mobile}`:`gst_${gstin}`);
+ const record={...(existing||{}),customerId,displayName:displayName||existing?.displayName||"",
+  customerName:displayName||existing?.customerName||"",mobile:mobile||existing?.mobile||"",
+  gstin:gstin||existing?.gstin||"",legalName:s.legalName||existing?.legalName||"",
+  tradeName:s.tradeName||existing?.tradeName||"",address:s.address||existing?.address||"",
+  customerType:s.salesChannel==="b2b"?"B2B":(existing?.customerType||"Retail"),
+  lastSalesChannel:s.salesChannel,lastSaleSource:s.orderSource||"",lastPurchaseAt:s.created,
+  updatedAt:new Date().toISOString(),totalOrders:(existing?.totalOrders||0)+1,
+  totalSpend:Number(existing?.totalSpend||0)+Number(s.total||0)};
+ if(existing)customers=customers.map(c=>c.customerId===customerId?record:c);else customers.push(record);
+ s.customerId=customerId;
+ await setDoc(doc(db,"customers",customerId),{...record,updatedBy:currentUser.uid},{merge:true});
+ persistLocalOnly();refreshCustomerSuggestions();return customerId;
+}
+function snapshot(){const subtotal=calc().total,deliveryCharge=salesChannel==="online"?(Number($("deliveryCharge").value)||0):0,packagingCost=salesChannel==="online"?(Number($("packagingCost").value)||0):0;return {id:Date.now(),salesChannel,channelLabel:({shop:"Shop",b2b:"B2B",online:"Online"})[salesChannel],orderSource:saleSourceValue(),deliveryCharge,packagingCost,type,customer:$("customerName").value.trim()||(salesChannel==="shop"?"Walk-in customer":""),mobile:$("mobile").value.trim(),gstin:$("gstin").value.trim(),legalName:$("legalName").value.trim(),tradeName:$("tradeName").value.trim(),address:$("address").value.trim(),supply:$("supplyState").value,items:cart.map(x=>({...x})),discount:Number($("discount").value)||0,payment:$("payment").value,splitUpi:Number($("splitUpi").value)||0,splitCash:Number($("splitCash").value)||0,subtotal,total:subtotal+deliveryCharge,created:new Date().toISOString()}}
+function resetCurrentBill(){
+ cart=[];
+ ["customerName","mobile","gstin","legalName","tradeName","address"].forEach(id=>{if($(id))$(id).value="";});
+ if($("customerMatchStatus")){ $("customerMatchStatus").textContent="No saved customer selected.";$("customerMatchStatus").className="small muted"; }
+ $("discount").value="0";$("payment").value="UPI";$("deliveryCharge").value="0";$("packagingCost").value="0";$("salesChannel").value="shop";$("splitFields").classList.add("hidden");
+ updateSalesChannel("shop");renderCart();
+}
+function holdCurrentBill(){
+ if(!cart.length)return toast("Add products before holding a bill.");
+ if(!saleSourceValue())return toast("Select the sale source before holding this bill.");
+ const held={...snapshot(),id:Date.now(),status:"Held",heldAt:new Date().toISOString()};
+ drafts.unshift(held);persist();resetCurrentBill();toast("Bill held. You can start another customer’s billing now.");
+}
+function saveDraft(){if(!cart.length)return toast("Add at least one product.");if(!saleSourceValue())return toast("Select the sale source first.");drafts.unshift(snapshot());persist();toast("Draft saved. Cloud sync will run automatically when connected.")}
+function invoiceSeriesFor(channel){
+ const map={shop:{prefix:settings.shopPrefix||settings.prefix||"INV-",next:settings.shopNextNumber||settings.nextNumber||1},
+ b2b:{prefix:settings.b2bPrefix||"B2B-",next:settings.b2bNextNumber||1},
+ online:{prefix:settings.onlinePrefix||"ONL-",next:settings.onlineNextNumber||1}};
+ return map[channel]||map.shop;
+}
+function buildInvoice(s){let taxTotal=0,taxable=0;let lines=s.items.map(x=>{let gross=x.price*x.qty,base=x.gst===null?gross:gross/(1+x.gst/100),t=gross-base;taxTotal+=t;taxable+=base;return {...x,gross,base,tax:t}});let isLocal=s.type==="retail"||s.supply==="29",series=invoiceSeriesFor(s.salesChannel||"shop"),num=s.invoiceNo||(series.prefix+String(series.next).padStart(4,"0"));return `<div class="rhead"><h1>${settings.bizName||"DURGA VENTURES"}</h1><div>${settings.bizAddress||"Registered address not configured"}</div><div>GSTIN: ${settings.bizGstin||"NOT CONFIGURED"}</div><h2 style="margin:12px 0 0">SALES INVOICE PREVIEW</h2><div class="tiny">LOCAL TEST RECORD · NOT A VALID GST TAX INVOICE · ${num}</div></div><div class="rbox"><b>Bill to:</b> ${s.type==="b2b"?(s.legalName||s.customer):s.customer}<br>${s.type==="b2b"&&s.tradeName?"Trade name: "+s.tradeName+"<br>":""}Mobile: ${s.mobile||"—"}<br>${s.type==="b2b"?"GSTIN: "+(s.gstin||"—")+"<br>Address: "+(s.address||"—"):"Retail customer"}<br>Place of supply: ${isLocal?"Karnataka":"Other state"}</div><div class="tiny">Sales channel: ${s.channelLabel||s.salesChannel||"Shop"}${s.orderSource?" · Source: "+s.orderSource:""}<br>Date: ${new Date().toLocaleString("en-IN")} &nbsp; Payment: ${s.payment}</div><table><thead><tr><th>Item / HSN</th><th>Qty</th><th>Rate</th><th class="rnum">Amount</th></tr></thead><tbody>${lines.map(x=>`<tr><td>${x.name}<br><span class="tiny">HSN ${x.hsn||"NOT SET"} · GST ${x.gst??"NOT SET"}%</span></td><td>${x.qty}</td><td>${money(x.price)}</td><td class="rnum">${money(x.gross)}</td></tr>`).join("")}</tbody></table><div class="rbox"><div>Taxable value: ${money(Math.max(0,taxable-s.discount))}</div><div>${isLocal?"CGST + SGST":"IGST"}: ${money(taxTotal)}</div><div>Discount: ${money(s.discount)}</div>${s.deliveryCharge?`<div>Delivery charge: ${money(s.deliveryCharge)}</div>`:""}${s.packagingCost?`<div>Packaging cost: ${money(s.packagingCost)}</div>`:""}<div class="rtotal">Grand total: ${money(s.total)}</div></div><p class="tiny">This is a preview generated by a local prototype. It is not a valid tax invoice. Verify HSN, GST rate, tax split, business particulars, invoice series and statutory requirements before issuing invoices.</p>`}
+function preview(){if(!cart.length)return;if(!saleSourceValue()){toast("Select the sale source first.");return}let s=snapshot();$("previewBody").innerHTML=buildInvoice(s);open("previewModal")}
 function printMode(mode){$("receipt").innerHTML=$("previewBody").innerHTML;document.body.classList.toggle("print-thermal",mode==="thermal");close("previewModal");window.print();setTimeout(()=>document.body.classList.remove("print-thermal"),1000)}
 function showHistory(){
  let completed=sales.length?`<h3 style="font-size:13px;margin:0 0 8px">Completed local test sales</h3>`+sales.map((s,i)=>`<div style="padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px"><div><b>${s.invoiceNo} · ${s.customer}</b><div class="small muted">${new Date(s.created).toLocaleString("en-IN")} · ${s.type==="b2b"?"GST B2B":"Retail"} · ${s.payment}</div><div class="small"><span class="status">${s.paymentStatus==="Paid"?"PAID":"PAYMENT PENDING"}</span></div></div><div class="right"><b>${money(s.total)}</b><br><button class="btn light" data-print-sale="${i}" style="margin-top:5px">Print</button></div></div>`).join(""):'<div class="small muted" style="padding:8px 0 16px">No completed sales recorded on this device.</div>';
- let saved=drafts.length?`<h3 style="font-size:13px;margin:20px 0 8px">Saved drafts</h3>`+drafts.map((d,i)=>`<div style="padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px"><div><b>${d.customer}</b><div class="small muted">${new Date(d.created).toLocaleString("en-IN")} · ${d.items.length} line items · ${d.type==="b2b"?"GST B2B":"Retail"}</div></div><div class="right"><b>${money(d.total)}</b><br><button class="btn light" data-load="${i}" style="margin-top:5px">Load draft</button></div></div>`).join(""):'<div class="small muted" style="padding:8px 0">No saved drafts.</div>';
+ let saved=drafts.length?`<h3 style="font-size:13px;margin:20px 0 8px">Held bills & saved drafts</h3>`+drafts.map((d,i)=>`<div style="padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px"><div><b>${d.customer||d.mobile||"Walk-in customer"}</b><div class="small muted">${d.status==="Held"?"ON HOLD · ":"SAVED DRAFT · "}${new Date(d.heldAt||d.created).toLocaleString("en-IN")} · ${d.items.length} line items · ${d.type==="b2b"?"GST B2B":"Retail"}</div></div><div class="right"><b>${money(d.total)}</b><br><button class="btn light" data-load="${i}" style="margin-top:5px">${d.status==="Held"?"Resume bill":"Load draft"}</button></div></div>`).join(""):'<div class="small muted" style="padding:8px 0">No saved drafts.</div>';
  $("historyBody").innerHTML=completed+saved;
- $("historyBody").querySelectorAll("[data-load]").forEach(b=>b.onclick=()=>{let d=drafts[+b.dataset.load];cart=d.items.map(x=>({...x}));$("customerName").value=d.customer;$("mobile").value=d.mobile;$("gstin").value=d.gstin;$("legalName").value=d.legalName||"";$("tradeName").value=d.tradeName||"";$("address").value=d.address;$("discount").value=d.discount;$("payment").value=d.payment;$("supplyState").value=d.supply;updateType(d.type);close("historyModal");renderCart();toast("Draft loaded")});
+ $("historyBody").querySelectorAll("[data-load]").forEach(b=>b.onclick=()=>{let idx=+b.dataset.load,d=drafts[idx];if(cart.length&&!confirm("Loading this bill will replace the current bill. Hold the current bill first if you need it later."))return;drafts.splice(idx,1);persist();cart=d.items.map(x=>({...x}));$("customerName").value=d.customer||"";$("mobile").value=d.mobile;$("gstin").value=d.gstin;$("legalName").value=d.legalName||"";$("tradeName").value=d.tradeName||"";$("address").value=d.address;$("discount").value=d.discount;$("payment").value=d.payment;$("supplyState").value=d.supply;$("salesChannel").value=d.salesChannel||"shop";updateSalesChannel(d.salesChannel||"shop");$("saleSource").value=d.orderSource||"";updateType(d.type);close("historyModal");renderCart();toast(d.status==="Held"?"Held bill resumed":"Draft loaded")});
  $("historyBody").querySelectorAll("[data-print-sale]").forEach(b=>b.onclick=()=>{let s=sales[+b.dataset.printSale];$("receipt").innerHTML=buildInvoice(s);close("historyModal");window.print()});
  open("historyModal")
 }
-function finalizeSale(){
+async function finalizeSale(){
  if(!cart.length)return toast("Add at least one product before completing a sale.");
  const s=snapshot();
+ if(!s.orderSource){toast("Select the sale source before recording this sale.");return}
  if(s.type==="b2b"&&!validateGSTIN(s.gstin).ok){toast("Enter a valid 15-character GSTIN for B2B billing.");return}
  if(s.payment==="Split payment"&&Math.abs((s.splitUpi+s.splitCash)-s.total)>0.01){toast("Split payment amounts must add up to the bill total.");return}
  if(cart.some(x=>x.gst===null||!x.hsn)){toast("Configure HSN and GST rates for every product before completing a test sale.");return}
  if(!settings.bizGstin||!settings.bizAddress){toast("Enter the business GSTIN and registered address in POS Settings first.");return}
- const prefix=settings.prefix||"DV/TEST/";
- const seq=Number(settings.nextNumber)||1;
- s.invoiceNo=prefix+String(seq).padStart(4,"0");
+ const series=invoiceSeriesFor(s.salesChannel||"shop");
+ const seq=Number(series.next)||1;
+ s.invoiceNo=series.prefix+String(seq).padStart(4,"0");
  s.paymentStatus=s.payment==="Credit"?"Pending":"Paid";
  s.recordType="LOCAL_TEST_ONLY";
  if(!confirm(`Confirm this local test sale for ${money(s.total)}? Payment status: ${s.paymentStatus}. This does NOT issue a legally valid GST invoice.`))return;
- sales.unshift(s);settings.nextNumber=seq+1;persist();
+ try{await upsertCustomerFromSale(s);}catch(e){console.error("Customer save failed",e);toast("Customer profile could not be saved. Sale was not recorded.");return}
+ sales.unshift(s);
+ if(s.salesChannel==="b2b")settings.b2bNextNumber=seq+1;
+ else if(s.salesChannel==="online")settings.onlineNextNumber=seq+1;
+ else settings.shopNextNumber=seq+1;
+ persist();
  $("receipt").innerHTML=buildInvoice(s);
  close("previewModal");
- cart=[];$("customerName").value="";$("mobile").value="";$("gstin").value="";$("legalName").value="";$("tradeName").value="";$("address").value="";$("discount").value="0";$("payment").value="UPI";$("splitFields").classList.add("hidden");
- renderCart();toast(`Test sale recorded: ${s.invoiceNo} · Cloud sync queued`);
+ resetCurrentBill();toast(`Test sale recorded: ${s.invoiceNo} · Cloud sync queued`);
 }
+
+
+function inventoryExpiry(p){const raw=p.expiryDate;if(!raw)return {label:"Not set",soon:false,expired:false};const d=new Date(String(raw).slice(0,10)+"T00:00:00");if(Number.isNaN(d.getTime()))return {label:"Invalid date",soon:false,expired:false};const today=new Date();today.setHours(0,0,0,0);const days=Math.round((d-today)/86400000);return {label:String(raw).slice(0,10),soon:days>=0&&days<=30,expired:days<0};}
+function movementDelta(m){const q=Number(m.quantity||0);if(m.type==="outward"||m.type==="damage")return -Math.abs(q);if(m.type==="adjustment")return q;return Math.abs(q);}
+function productStock(p){const baseline=Number(p.stock||0);const moves=inventoryMovements.filter(m=>m.productId===p.productId);return baseline+moves.reduce((n,m)=>n+movementDelta(m),0);}
+function productReserved(p){return inventoryMovements.filter(m=>m.productId===p.productId&&m.type==="reserve").reduce((n,m)=>n+Number(m.quantity||0),0);}
+function invTypeLabel(t){return ({opening:"Opening",inward:"Inward",outward:"Outward",adjustment:"Adjustment",damage:"Damage / expiry",return:"Customer return",reserve:"Reserved"})[t]||t;}
+function renderInventory(){if(!$("invRows"))return;const active=products.filter(p=>p.active!==false);const exp=p=>inventoryExpiry(p);const qty=productStock;$ ("invProducts").textContent=active.length;$ ("invUnits").textContent=active.reduce((n,p)=>n+qty(p),0).toLocaleString("en-IN");$ ("invLow").textContent=active.filter(p=>qty(p)<=Number(p.reorderLevel??5)).length;$ ("invExpiry").textContent=active.filter(p=>exp(p).soon||exp(p).expired||inventoryMovements.some(m=>m.productId===p.productId&&m.expiryDate&&inventoryExpiry({expiryDate:m.expiryDate}).soon)).length;const search=$("invSearch").value.trim().toLowerCase(),filter=$("invFilter").value;const rows=active.filter(p=>{const q=qty(p),e=exp(p);if(filter==="low"&&q>Number(p.reorderLevel??5))return false;if(filter==="expiry"&&!(e.soon||e.expired||inventoryMovements.some(m=>m.productId===p.productId&&m.expiryDate&&(inventoryExpiry({expiryDate:m.expiryDate}).soon||inventoryExpiry({expiryDate:m.expiryDate}).expired))))return false;if(filter==="missing"&&p.stock!==undefined&&p.stock!==null&&p.stock!=="")return false;return [p.name,p.barcode,p.category,p.batchNumber].some(v=>String(v||"").toLowerCase().includes(search));});$("invRows").innerHTML=rows.map(p=>{const q=qty(p),e=exp(p),low=q<=Number(p.reorderLevel??5),reserved=productReserved(p),available=q-reserved;const batches=inventoryMovements.filter(m=>m.productId===p.productId&&m.batchNumber).map(m=>m.batchNumber+ (m.expiryDate?" · "+m.expiryDate:""));const label=q<=0?"Out of stock":low?"Reorder":e.expired?"Expired":e.soon?"Expiring soon":"In stock";const tone=q<=0||e.expired?"bad":low||e.soon?"warn":"";return `<tr><td><strong>${escapeHtml(p.name)}</strong><div class="small muted">${escapeHtml(p.category||"Uncategorised")}</div></td><td>${escapeHtml(p.barcode||"—")}</td><td>${q}</td><td>${reserved}</td><td><strong>${available}</strong></td><td>${escapeHtml([...new Set(batches)].join(", ")||p.batchNumber||"—")}</td><td><span class="inv-pill ${tone}">${label}</span></td></tr>`}).join("")||'<tr><td colspan="7" class="muted">No matching products.</td></tr>';$ ("invCount").textContent=`Showing ${rows.length} of ${active.length} active products. Legacy Product Master stock is used as opening baseline until movements are recorded.`;renderInvLedger();renderInvCounts();renderInvReorder();}
+function renderInvLedger(){$("invLedgerRows").innerHTML=[...inventoryMovements].sort((a,b)=>String(b.created||"").localeCompare(String(a.created||""))).slice(0,100).map(m=>`<tr><td>${escapeHtml(m.created||"—")}</td><td>${escapeHtml(products.find(p=>p.productId===m.productId)?.name||m.productName||"Unknown")}</td><td>${escapeHtml(invTypeLabel(m.type))}</td><td>${escapeHtml(m.batchNumber||"—")}</td><td>${movementDelta(m)>0?"+":""}${movementDelta(m)}</td><td>${escapeHtml(m.location||"—")}</td><td>${escapeHtml([m.reference,m.notes].filter(Boolean).join(" · ")||"—")}</td></tr>`).join("")||'<tr><td colspan="7">No movements recorded yet.</td></tr>';}
+function renderInvCounts(){$("invCountRows").innerHTML=inventoryCounts.slice().sort((a,b)=>String(b.created||"").localeCompare(String(a.created||""))).slice(0,50).map(c=>`<div class="info">${escapeHtml(c.productName)} · System: ${c.systemQty} · Counted: ${c.actualQty} · Difference: ${c.difference} · ${escapeHtml(c.location||"")} · ${escapeHtml(c.notes||"")}</div>`).join("")||'<p class="muted">No physical counts yet.</p>';}
+function renderInvReorder(){$("invReorderRows").innerHTML=products.filter(p=>p.active!==false&&productStock(p)<=Number(p.reorderLevel??5)).map(p=>`<div class="info"><b>${escapeHtml(p.name)}</b> · On hand ${productStock(p)} · Reorder level ${Number(p.reorderLevel??5)} · Suggested top-up ${Math.max(0,Number(p.reorderLevel??5)*2-productStock(p))}</div>`).join("")||'<p class="muted">No products currently below reorder level.</p>';}
+function openInvMove(){const sel=$("imProduct");sel.innerHTML=products.filter(p=>p.active!==false).map(p=>`<option value="${escapeHtml(p.productId)}">${escapeHtml(p.name)}</option>`).join("");$("invMoveModal").classList.remove("hidden");}
+function openInvCount(){const sel=$("icProduct");sel.innerHTML=products.filter(p=>p.active!==false).map(p=>`<option value="${escapeHtml(p.productId)}">${escapeHtml(p.name)}</option>`).join("");$("invCountModal").classList.remove("hidden");}
+async function saveInvMovement(){if(!currentUser||!activeProfile)return toast("Sign in with an active account first.");const p=products.find(x=>x.productId===$("imProduct").value),type=$("imType").value,q=Number($("imQty").value);if(!p||!Number.isFinite(q)||q<=0)return toast("Select a product and enter a quantity greater than zero.");const mfg=$("imMfg").value,expiry=$("imExpiry").value;if(mfg&&expiry&&expiry<mfg)return toast("Expiry cannot be earlier than manufacturing date.");const movement={productId:p.productId,productName:p.name,type,quantity:q,batchNumber:$("imBatch").value.trim(),manufacturingDate:mfg,expiryDate:expiry,location:$("imLocation").value.trim()||"Mangaluru Store",supplier:$("imSupplier").value.trim(),reference:$("imRef").value.trim(),unitCost:Number($("imCost").value||0),notes:$("imNotes").value.trim(),created:new Date().toISOString(),createdBy:currentUser.uid};const next=productStock(p)+movementDelta(movement);if(next<0)return toast("This movement would make stock negative. Correct the quantity first.");try{const ref=doc(collection(db,"inventoryMovements"));await setDoc(ref,movement);inventoryMovements.unshift({...movement,id:ref.id});persistLocalOnly();$("invMoveModal").classList.add("hidden");renderInventory();toast("Stock movement saved.");}catch(e){console.error(e);toast("Could not save movement. Check Firestore inventory rules.");}}
+async function saveInvCount(){const p=products.find(x=>x.productId===$("icProduct").value),actual=Number($("icQty").value),notes=$("icNotes").value.trim();if(!p||!Number.isFinite(actual)||actual<0||!notes)return toast("Enter product, actual quantity and discrepancy reason.");const system=productStock(p),difference=actual-system,record={productId:p.productId,productName:p.name,batchNumber:$("icBatch").value.trim(),systemQty:system,actualQty:actual,difference,location:$("icLocation").value.trim()||"Mangaluru Store",notes,created:new Date().toISOString(),createdBy:currentUser?.uid||""};try{const ref=doc(collection(db,"inventoryCounts"));await setDoc(ref,record);inventoryCounts.unshift({...record,id:ref.id});if(difference!==0){const m={productId:p.productId,productName:p.name,type:"adjustment",quantity:difference,batchNumber:record.batchNumber,location:record.location,reference:"COUNT-"+ref.id,notes:"Physical count: "+notes,created:new Date().toISOString(),createdBy:record.createdBy};const mr=doc(collection(db,"inventoryMovements"));await setDoc(mr,m);inventoryMovements.unshift({...m,id:mr.id});}$("invCountModal").classList.add("hidden");renderInventory();toast("Physical count saved"+(difference?" and adjustment posted.":"; no variance."));}catch(e){console.error(e);toast("Could not save count. Check Firestore inventory rules.");}}
+$("invSearch").addEventListener("input",renderInventory);$("invFilter").addEventListener("change",renderInventory);$("invRefresh").onclick=renderInventory;$("invGoProducts").onclick=()=>showView("products");$("invMoveBtn").onclick=openInvMove;$("invCountBtn").onclick=openInvCount;$("imSave").onclick=saveInvMovement;$("icSave").onclick=saveInvCount;document.querySelectorAll("[data-invclose]").forEach(b=>b.onclick=()=>{ $("invMoveModal").classList.add("hidden");$("invCountModal").classList.add("hidden");});document.querySelectorAll("[data-invtab]").forEach(b=>b.onclick=()=>{["invLedgerPanel","invCountsPanel","invReorderPanel"].forEach(id=>$(id).classList.add("hidden"));const t=b.dataset.invtab;if(t==="ledger")$("invLedgerPanel").classList.remove("hidden");if(t==="counts")$("invCountsPanel").classList.remove("hidden");if(t==="reorder")$("invReorderPanel").classList.remove("hidden");});
+
+const posFullscreenBtn=$("posFullscreenBtn");
+function syncPosFullscreenButton(){const active=!!document.fullscreenElement;posFullscreenBtn.textContent=active?"⤢ Exit full screen":"⛶ Full screen";posFullscreenBtn.title=active?"Exit full screen (Esc)":"Use POS in full screen";}
+posFullscreenBtn.onclick=async()=>{try{if(document.fullscreenElement){await document.exitFullscreen();}else{if(!document.documentElement.requestFullscreen)throw new Error("Fullscreen is not supported by this browser.");await document.documentElement.requestFullscreen();}}catch(err){toast(err.message||"Could not enter full screen. Check browser permissions.");}};
+document.addEventListener("fullscreenchange",syncPosFullscreenButton);
+syncPosFullscreenButton();
 
 $("loginBtn").onclick=handleSignIn;
 $("loginSignOutBtn").onclick=()=>signOut(auth);
@@ -542,14 +916,27 @@ $("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")handleSignI
 $("loginEmail").addEventListener("keydown",e=>{if(e.key==="Enter")$("loginPassword").focus()});
 $("logoutBtn").onclick=()=>signOut(auth);
 onAuthStateChanged(auth,handleAuthState);
+$("posBarcodeInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();handleScannedBarcode(e.target.value,"pos");}});
+$("posCameraScan").onclick=()=>startBarcodeCamera("pos");$("productCameraScan").onclick=()=>startBarcodeCamera("product");$("closeBarcodeScanner").onclick=stopBarcodeCamera;$("barcodeScannerModal").addEventListener("click",e=>{if(e.target.id==="barcodeScannerModal")stopBarcodeCamera();});
 $("search").oninput=renderProducts;$("category").onchange=renderProducts;$("discount").oninput=renderCart;$("supplyState").onchange=renderCart;
-$("customerType").onclick=e=>{let b=e.target.closest("button[data-type]");if(b)updateType(b.dataset.type)};
+$("salesChannel").onchange=e=>updateSalesChannel(e.target.value);
+$("saleSource").onchange=updateSaleSource;
+$("saleSource").innerHTML='<option value="">Select source</option>'+channelSources.shop.map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+$("deliveryCharge").oninput=renderCart;$("packagingCost").oninput=renderCart;
 $("gstin").addEventListener("input",()=>{let v=validateGSTIN($("gstin").value);$("gstinStatus").textContent=v.message;$("gstinStatus").style.color=v.ok?"#805613":"#738078";});
+$("customerName").addEventListener("input",e=>{const typed=e.target.value;$("customerMatchStatus").textContent="Search by name, or use mobile number for the most reliable match.";$("customerMatchStatus").className="small muted";renderCustomerResults(typed,"name");});
+$("customerName").addEventListener("focus",e=>{if(e.target.value.trim())renderCustomerResults(e.target.value,"name");});
+$("customerResults").addEventListener("click",e=>{const b=e.target.closest("[data-customer-index]");if(b)selectCustomer(customers[Number(b.dataset.customerIndex)]);});
+$("mobile").addEventListener("input",()=>{const v=digitsOnly($("mobile").value);$("mobile").value=v.slice(-10);$("customerName").dataset.selectedCustomer="";$("customerMatchStatus").textContent="Searching saved customers by mobile number…";$("customerMatchStatus").className="small muted";if(v.length>=3)renderCustomerResults(v.slice(-10),"mobile");else $("customerResults").classList.add("hidden");if(v.length===10)fillCustomerDetails();});
+$("mobile").addEventListener("focus",()=>{const v=digitsOnly($("mobile").value);if(v.length>=3)renderCustomerResults(v.slice(-10),"mobile");});
+$("mobile").addEventListener("blur",fillCustomerDetails);
+$("gstin").addEventListener("blur",fillCustomerDetails);
+document.addEventListener("click",e=>{if(!e.target.closest(".customer-picker"))$("customerResults").classList.add("hidden");});
 $("gstin").addEventListener("blur",lookupGSTIN);
-$("clearCart").onclick=()=>{cart=[];renderCart()};
+$("clearCart").onclick=()=>{if(cart.length&&!confirm("Clear the current bill? This cannot be recovered unless you hold or save it."))return;resetCurrentBill()};$("holdBill").onclick=holdCurrentBill;
 $("addProductBtn").onclick=()=>{productFormReset();open("productModal")};
 $("masterAddProductBtn").onclick=()=>{productFormReset();open("productModal")};
-$("saveNewProduct").onclick=saveNewProduct;
+$("saveNewProduct").onclick=saveNewProduct;$("addCategoryBtn").onclick=showAddCategory;$("saveCategoryBtn").onclick=addProductCategory;$("cancelCategoryBtn").onclick=hideAddCategory;$("newCategoryName").addEventListener("keydown",e=>{if(e.key==="Enter")addProductCategory();if(e.key==="Escape")hideAddCategory();});
 $("masterSearch").oninput=renderProductMaster;$("masterStatus").onchange=renderProductMaster;
 document.querySelectorAll(".nav button[data-view]").forEach(b=>b.onclick=()=>showView(b.dataset.view));$("settingsBtn").onclick=()=>{fillSettings();open("settingsModal")};$("saveSettings").onclick=saveSettings;$("saveDraft").onclick=saveDraft;$("previewBtn").onclick=preview;$("historyBtn").onclick=showHistory;
 $("payment").onchange=()=>$("splitFields").classList.toggle("hidden",$("payment").value!=="Split payment");
