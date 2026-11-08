@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Wellwith OS · POS & Billing</title>
+<title>Wellwith OS · Business Workspace</title>
 <style>
 :root{--green:#174b37;--green2:#23664b;--cream:#f6f4ec;--paper:#fff;--ink:#202923;--muted:#738078;--line:#e4e9e4;--soft:#edf4ef;--red:#a33b32;--amber:#8a5a13;--shadow:0 8px 28px rgba(20,50,35,.07)}
 *{box-sizing:border-box}body{margin:0;background:#f4f6f3;color:var(--ink);font:14px/1.45 Inter,Segoe UI,Arial,sans-serif}
@@ -78,6 +78,17 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
 .auth-card .field{margin:12px 0}.auth-message{font-size:12px;color:var(--red);min-height:18px;margin-top:10px}
 .app.auth-locked{display:none}.cloud-indicator{font-size:11px;color:#52745d;margin-left:10px}
 @media(max-width:700px){.auth-card{padding:22px}}
+ 
+.metric{font-size:28px;font-weight:800;color:var(--green);margin:5px 0}
+.dashboard-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.module-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.module-tile{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fff;text-align:left;min-height:105px}
+.module-tile:hover{border-color:#8bb49a;background:#fbfdfb}
+.module-tile strong{display:block;color:var(--green);font-size:13px;margin-bottom:5px}
+.module-tile span{font-size:11px;color:var(--muted)}
+.module-tile em{display:block;font-size:10px;color:var(--amber);font-style:normal;margin-top:9px}
+@media(max-width:900px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.module-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.dashboard-grid,.module-tiles{grid-template-columns:1fr}.app{grid-template-columns:190px 1fr}.content{padding:16px}}
 </style>
 </head>
 <body>
@@ -99,7 +110,20 @@ label{display:block;font-size:11px;font-weight:700;color:#66736b;margin:0 0 5px}
  <div class="brand"><strong>WELLWITH <span style="color:#b6d6c2">OS</span></strong><small>The Original Sea Buckthorn Co.</small></div>
  <div class="org"><b>DURGA VENTURES</b>Wellwith Mangaluru Store<br><span style="color:#c3d8ca">Business workspace</span></div>
  <div class="navlabel">Workspace</div>
- <nav class="nav"><button data-view="pos">▣ &nbsp; POS & Billing</button><button data-view="products" class="active">▦ &nbsp; Product Master</button><button disabled>♙ &nbsp; CRM</button><button disabled>▤ &nbsp; Books & Accounts</button><button disabled>▥ &nbsp; Inventory</button><button disabled>⇧ &nbsp; Purchases</button><button disabled>₹ &nbsp; Expenses</button><button disabled>♧ &nbsp; HR & Payroll</button><button disabled>◉ &nbsp; Marketing</button><button disabled>▥ &nbsp; Reports & Analytics</button><button disabled>⚙ &nbsp; Administration</button></nav>
+ <nav class="nav">
+<button data-view="dashboard" class="active">▦ &nbsp; Dashboard</button>
+<button data-view="pos">▣ &nbsp; POS & Billing</button>
+<button data-view="products">▤ &nbsp; Product Master</button>
+<button data-view="crm">♙ &nbsp; CRM</button>
+<button data-view="books">₹ &nbsp; Books & Accounts</button>
+<button data-view="inventory">▥ &nbsp; Inventory</button>
+<button data-view="purchases">⇧ &nbsp; Purchases</button>
+<button data-view="expenses">↗ &nbsp; Expenses</button>
+<button data-view="hr">♧ &nbsp; HR & Payroll</button>
+<button data-view="marketing">◉ &nbsp; Marketing</button>
+<button data-view="reports">▧ &nbsp; Reports & Analytics</button>
+<button data-view="admin">⚙ &nbsp; Administration</button>
+</nav>
  <div class="sidefoot">Firebase-connected workspace<br>Empty catalogue · Add your products</div>
 </aside>
 <main>
@@ -362,14 +386,43 @@ function renderProductMaster(){
  $("masterRows").querySelectorAll("[data-toggle-product]").forEach(b=>b.onclick=()=>toggleProduct(b.dataset.toggleProduct));
 }
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+const moduleInfo={
+ dashboard:{title:"Business Dashboard",desc:"Business overview and module launchpad.",tiles:[["Business snapshot","Key business KPIs and alerts"],["Recent activity","Latest approved transactions"],["Tasks & reminders","Pending actions and follow-ups"]]},
+ crm:{title:"CRM",desc:"Customer and relationship management foundation.",tiles:[["Customer master","Profiles, contact details and GST information"],["Purchase history","Customer-wise sales history"],["Follow-ups","Calls, notes and customer tasks"]]},
+ books:{title:"Books & Accounts",desc:"Accounting and financial control foundation.",tiles:[["Chart of accounts","Ledger groups and account heads"],["Journal entries","Double-entry accounting transactions"],["Cash & bank","Cashbook, bankbook and reconciliation"],["Receivables & payables","Customer and supplier balances"]]},
+ inventory:{title:"Inventory",desc:"Stock control and movement ledger foundation.",tiles:[["Stock overview","On-hand, available and reserved stock"],["Stock movements","Inward, outward and adjustments"],["Stock counts","Physical verification and reconciliation"],["Locations","Store and warehouse stock locations"]]},
+ purchases:{title:"Purchases",desc:"Procurement and supplier workflow foundation.",tiles:[["Supplier master","Supplier profiles and GST details"],["Purchase orders","Requisitions and order approvals"],["Goods received","GRN and stock inward"],["Purchase bills","Supplier invoices and due dates"]]},
+ expenses:{title:"Expenses",desc:"Business expense capture and approval foundation.",tiles:[["Expense entry","Record business expenses"],["Expense categories","Standard expense heads"],["Approvals","Review and approve claims"],["Recurring expenses","Rent, utilities and subscriptions"]]},
+ hr:{title:"HR & Payroll",desc:"People operations and payroll foundation.",tiles:[["Employee master","Employee records and roles"],["Attendance","Attendance and shift records"],["Leave management","Leave requests and balances"],["Payroll","Salary calculation and payslips"]]},
+ marketing:{title:"Marketing",desc:"Campaign and lead-generation foundation.",tiles:[["Campaigns","Campaign planning and budgets"],["Leads","Lead capture and assignment"],["Channels","Meta, WhatsApp and other channels"],["Performance","Spend, leads and conversion metrics"]]},
+ reports:{title:"Reports & Analytics",desc:"Management reporting foundation.",tiles:[["Sales reports","Sales by date, product and channel"],["Profitability","Gross margin and contribution"],["Inventory reports","Stock ageing and valuation"],["Financial reports","P&L, balance sheet and cash flow"]]},
+ admin:{title:"Administration",desc:"Workspace configuration, users and access control.",tiles:[["Users & roles","Staff accounts and permissions"],["Business profile","Legal entity and tax configuration"],["Audit trail","User activity and change history"],["System settings","Numbering, preferences and integrations"]]}
+};
 function showView(view){
- $("productMasterView").classList.toggle("hidden",view!=="products");
- $("posView").classList.toggle("hidden",view!=="pos");
+ const valid=["dashboard","pos","products",...Object.keys(moduleInfo).filter(x=>x!=="dashboard")];
+ if(!valid.includes(view))view="dashboard";
+ ["dashboardView","moduleView","productMasterView","posView"].forEach(id=>$(id).classList.add("hidden"));
+ if(view==="dashboard")$("dashboardView").classList.remove("hidden");
+ else if(view==="products")$("productMasterView").classList.remove("hidden");
+ else if(view==="pos")$("posView").classList.remove("hidden");
+ else{
+  const info=moduleInfo[view];$("moduleView").classList.remove("hidden");
+  $("moduleHeading").textContent=info.title;$("moduleDescription").textContent=info.desc;$("modulePanelTitle").textContent=info.title+" workspace";
+  $("moduleTiles").innerHTML=info.tiles.map(t=>`<div class="module-tile"><strong>${escapeHtml(t[0])}</strong><span>${escapeHtml(t[1])}</span><em>Foundation only · Not active</em></div>`).join("");
+ }
  document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
- const isPos=view==="pos";
- document.querySelector(".topbar .crumb").textContent=isPos?"Wellwith OS / Sales":"Wellwith OS / Masters / Products";
- document.querySelector(".topbar h1").textContent=isPos?"POS & Billing":"Product Master";
+ const labels={dashboard:"Business Dashboard",pos:"POS & Billing",products:"Product Master"};
+ const title=labels[view]||moduleInfo[view].title;
+ document.querySelector(".topbar .crumb").textContent="Wellwith OS / "+title;
+ document.querySelector(".topbar h1").textContent=title;
  if(view==="products")renderProductMaster();
+ if(view==="dashboard")renderDashboard();
+}
+function renderDashboard(){
+ $("dashProductCount").textContent=products.filter(p=>p.active!==false).length;
+ const items=[["dashboard","Dashboard","Business overview"],["pos","POS & Billing","Retail and B2B billing"],["products","Product Master","Central product catalogue"],["crm","CRM","Customers and follow-ups"],["books","Books & Accounts","Ledgers and accounting"],["inventory","Inventory","Stock and movements"],["purchases","Purchases","Procurement and GRN"],["expenses","Expenses","Expense management"],["hr","HR & Payroll","People and payroll"],["marketing","Marketing","Campaigns and leads"],["reports","Reports & Analytics","Business intelligence"],["admin","Administration","Users and settings"]];
+ $("dashboardModules").innerHTML=items.map(x=>`<button class="module-tile" data-open-module="${x[0]}"><strong>${x[1]}</strong><span>${x[2]}</span><em>${["dashboard","pos","products"].includes(x[0])?"Core workspace":"Foundation only"}</em></button>`).join("");
+ $("dashboardModules").querySelectorAll("[data-open-module]").forEach(b=>b.onclick=()=>showView(b.dataset.openModule));
 }
 function productFormReset(){
  editingProductSku=null;$("newProductSku").disabled=false;
@@ -421,17 +474,6 @@ async function toggleProduct(sku){
  catch(e){console.error(e);toast("Could not update product status.")}
 }
 
-function saveNewProduct(){
- const name=$("newProductName").value.trim(),sku=$("newProductSku").value.trim().toUpperCase(),category=$("newProductCategory").value;
- const priceText=$("newProductPrice").value,hsn=$("newProductHsn").value.trim(),gstText=$("newProductGst").value;
- if(!name||!sku||!category){toast("Product name, SKU and category are required.");return}
- if(products.some(p=>String(p.sku).toUpperCase()===sku)){toast("This SKU already exists. Use a unique product code.");return}
- const price=priceText===""?null:Number(priceText),gst=gstText===""?null:Number(gstText);
- if(price!==null&&(!Number.isFinite(price)||price<0)){toast("Enter a valid selling price.");return}
- if(gst!==null&&(!Number.isFinite(gst)||gst<0||gst>100)){toast("Enter a valid GST percentage.");return}
- products.push({name,sku,category,price,hsn,gst});persist();renderProducts();renderCart();
- ["newProductName","newProductSku","newProductCategory","newProductPrice","newProductHsn","newProductGst"].forEach(id=>$(id).value="");close("productModal");toast("Product added and queued for Firestore sync.");
-}
 function add(i){let p=products[i],item=cart.find(x=>x.sku===p.sku);if(item)item.qty++;else cart.push({...p,qty:1});renderCart()}
 function calc(){let taxable=0,tax=0;cart.forEach(x=>{let gross=x.price*x.qty,base=x.gst===null?gross:gross/(1+x.gst/100);taxable+=base;tax+=gross-base});let discount=Math.max(0,Number($("discount").value)||0),net=Math.max(0,taxable+tax-discount),taxableAfter=Math.max(0,taxable-discount),taxAfter=taxable>0?tax*(taxableAfter/taxable):0;return {taxable:taxableAfter,tax:taxAfter,total:net,discount}}
 function renderCart(){let area=$("cartArea");if(!cart.length){area.innerHTML='<div class="cart-empty">Your cart is empty.<br><span class="small">Choose products from the catalogue to start a bill.</span></div>'}else{area.innerHTML=`<table class="cart-table"><thead><tr><th>Item</th><th>Qty</th><th>Amount</th></tr></thead><tbody>${cart.map((x,i)=>`<tr><td><div class="itemname">${x.name}</div><div class="itemmeta">${x.sku} · ${x.gst===null?"GST not set":x.gst+"% GST"}</div></td><td><div class="qty"><button data-dec="${i}">−</button><span>${x.qty}</span><button data-inc="${i}">+</button></div></td><td>${money(x.price*x.qty)}<div class="itemmeta"><a href="#" data-remove="${i}" style="color:#a33b32">Remove</a></div></td></tr>`).join("")}</tbody></table>`}
@@ -513,7 +555,7 @@ document.querySelectorAll(".nav button[data-view]").forEach(b=>b.onclick=()=>sho
 $("payment").onchange=()=>$("splitFields").classList.toggle("hidden",$("payment").value!=="Split payment");
 $("printA4").onclick=()=>printMode("a4");$("printThermal").onclick=()=>printMode("thermal");$("completeSale").onclick=finalizeSale;
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>close(b.dataset.close));
-renderProducts();renderCart();renderProductMaster();showView("products");
+renderProducts();renderCart();renderProductMaster();showView("dashboard");
 </script>
 </body>
 </html>
