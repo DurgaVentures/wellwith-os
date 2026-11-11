@@ -5,7 +5,7 @@
 This repository is pinned to the Firebase demo project `demo-wellwith-os` through `.firebaserc`.
 The demo project ID is intentionally not a real Firebase project. Emulator commands below must be run with that project ID. Do not replace it with the production project ID.
 
-**Important:** the Phase 1 POS code in `index.html` has not yet been switched to the emulator. Do not test a sale from the current page until an explicit emulator connection mode is added and verified. Opening the normal production page or using the production Firebase configuration can write to live data.
+**Safety:** emulator mode is enabled only by `?environment=emulator` on `localhost` or `127.0.0.1`. The app refuses that flag on hosted domains. Opening the normal production URL uses the production Firebase configuration. Never use production customer or sales data in the emulator.
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ Emulator endpoints:
 
 1. Open the Emulator UI and create a test Authentication user.
 2. In the Firestore emulator, create `users/{test-auth-uid}` with `active: true` and a test role.
-3. Create test-only documents in `settings/pos`, `products`, and `inventoryMovements`.
+3. Create test-only documents in `settings/pos`, `products`, and `inventoryMovements`. The `returns` collection is also enabled by the emulator rules.
 4. Use clearly synthetic product names and IDs. Do not import production exports or customer data.
 5. Keep the emulator running while executing browser tests.
 
@@ -62,6 +62,20 @@ The rules in `firestore.rules` reproduce the access model described in the curre
 - Invalid split payment, invalid GSTIN format, missing HSN/GST configuration, inactive user, and offline state reject before commit.
 - A forced Firestore transaction error leaves the UI cart intact and creates no local success receipt.
 
+## Returns & Exchanges test cases
+
+- Search and select an existing test sale by invoice, customer, or mobile.
+- Return a partial quantity, then confirm the remaining returnable quantity is reduced.
+- Attempt to return more than the purchased quantity; the transaction must be rejected.
+- Post a saleable return; verify a `return` movement increases available stock.
+- Post a damaged/expired return; verify a `return_damaged` movement is recorded but does not increase saleable stock.
+- Attempt two returns concurrently against the same remaining quantity; only a valid non-overlapping quantity may commit.
+- Exchange an item for a replacement; verify replacement stock is checked and an `outward` movement is committed with the return record.
+- Force a transaction failure; verify no return or inventory movement is partially written.
+- Confirm the original sale document is unchanged.
+
+**Production Firestore rules:** the currently supplied production rules do not include the `returns` collection. Before using Returns against production, add `returns` to the active-user business collection allowlist after reviewing the security model. The app treats return reads as optional so missing permission does not block sign-in, but posting returns will fail until that rule is deployed.
+
 ## Current status
 
-This is emulator configuration and a test plan only. The app's explicit localhost-only emulator connection switch is now implemented. Deterministic seed script, automated browser tests, syntax/runtime verification, and transaction test execution are still pending. No production Firebase data is changed by these files.
+This is emulator configuration and a test plan only. The app's explicit localhost-only emulator connection switch is implemented. Returns & Exchanges is implemented on the repair branch and has corresponding emulator rules and test cases. Deterministic seed script, automated browser tests, syntax/runtime verification, and transaction test execution are still pending. No production Firebase data is changed by these files.
