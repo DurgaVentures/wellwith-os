@@ -147,6 +147,7 @@ html:fullscreen #posView>.layout{height:calc(100% - 48px)}
 
 
 /* Inventory overview */
+.returns-layout{display:grid;grid-template-columns:minmax(260px,.75fr) minmax(0,1.5fr);gap:14px;align-items:start}.return-sale-results{margin-top:10px;display:grid;gap:7px;max-height:520px;overflow:auto}.return-sale-option{border:1px solid var(--line);background:#fff;border-radius:8px;padding:10px;text-align:left}.return-sale-option:hover,.return-sale-option.active{border-color:#79a789;background:#f5faf6}.return-sale-option strong{display:block}.return-sale-option span{display:block;font-size:11px;color:var(--muted);margin-top:3px}.return-lines{width:100%;border-collapse:collapse;margin-top:10px}.return-lines th,.return-lines td{padding:8px 5px;border-bottom:1px solid var(--line);text-align:left;font-size:11px}.return-lines input,.return-lines select{padding:6px;min-width:65px}@media(max-width:900px){.returns-layout{grid-template-columns:1fr}}
 .inv-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 18px}.inv-kpi{background:#fff;border:1px solid var(--line);border-radius:11px;padding:16px}.inv-kpi span{display:block;color:var(--muted);font-size:12px}.inv-kpi strong{font-size:25px}.inv-filters{display:flex;gap:10px;margin-bottom:14px}.inv-filters input{flex:1}.inv-filters select{max-width:190px}.inv-table{width:100%;border-collapse:collapse;text-align:left}.inv-table th,.inv-table td{padding:12px;border-bottom:1px solid var(--line);font-size:12px}.inv-table th{color:var(--muted);background:#f8faf8}.inv-pill{display:inline-block;border-radius:30px;padding:4px 9px;background:#e8f4eb;color:#206344;font-size:11px;font-weight:700}.inv-pill.warn{background:#fff1d9;color:#85540c}.inv-pill.bad{background:#fbe8e6;color:#9b332c}@media(max-width:950px){.inv-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.inv-filters{flex-wrap:wrap}}
 </style>
 </head>
@@ -173,6 +174,7 @@ html:fullscreen #posView>.layout{height:calc(100% - 48px)}
  <nav class="nav">
 <button data-view="dashboard" class="active">▦ &nbsp; Dashboard</button>
 <button data-view="pos">▣ &nbsp; POS & Billing</button>
+<button data-view="returns">↩ &nbsp; Returns & Exchanges</button>
 <button data-view="products">▤ &nbsp; Product Master</button>
 <button data-view="crm">♙ &nbsp; CRM</button>
 <button data-view="books">₹ &nbsp; Books & Accounts</button>
@@ -213,6 +215,7 @@ html:fullscreen #posView>.layout{height:calc(100% - 48px)}
     <div id="invMoveModal" class="modal-backdrop hidden"><div class="modal"><div class="modalhead"><strong>Record stock movement</strong><button class="btn" data-invclose>✕</button></div><div class="modalbody"><div class="fields"><div><label>Product *</label><select id="imProduct"></select></div><div><label>Movement type *</label><select id="imType"><option value="opening">Opening stock</option><option value="inward">Purchase / stock inward</option><option value="outward">Stock outward</option><option value="adjustment">Adjustment (+/-)</option><option value="damage">Damaged / expired write-off</option><option value="return">Customer return (saleable)</option></select></div><div><label>Quantity *</label><input id="imQty" type="number" min="0.001" step="0.001"></div><div><label>Batch number</label><input id="imBatch" placeholder="Batch / lot"></div><div><label>Manufacturing date</label><input id="imMfg" type="date"></div><div><label>Expiry date</label><input id="imExpiry" type="date"></div><div><label>Location</label><input id="imLocation" value="Mangaluru Store"></div><div><label>Supplier / source</label><input id="imSupplier" placeholder="Supplier name"></div><div><label>Reference</label><input id="imRef" placeholder="Invoice / GRN / reason ref"></div><div><label>Unit cost (₹)</label><input id="imCost" type="number" min="0" step="0.01"></div></div><label style="margin-top:12px">Notes</label><textarea id="imNotes" rows="2" placeholder="Reason, damage details or receiving notes"></textarea><div class="note">Outward and damage movements reduce stock. Adjustment quantity may be positive or negative. Stock cannot become negative.</div></div><div class="modalfoot"><button class="btn" data-invclose>Cancel</button><button class="btn primary" id="imSave">Save movement</button></div></div></div>
     <div id="invCountModal" class="modal-backdrop hidden"><div class="modal"><div class="modalhead"><strong>Physical stock count</strong><button class="btn" data-invclose>✕</button></div><div class="modalbody"><div class="fields"><div><label>Product *</label><select id="icProduct"></select></div><div><label>Batch (optional)</label><input id="icBatch"></div><div><label>Actual counted quantity *</label><input id="icQty" type="number" min="0" step="0.001"></div><div><label>Location</label><input id="icLocation" value="Mangaluru Store"></div></div><label style="margin-top:12px">Count notes / discrepancy reason *</label><textarea id="icNotes" rows="2" placeholder="Explain shortage or excess"></textarea></div><div class="modalfoot"><button class="btn" data-invclose>Cancel</button><button class="btn primary" id="icSave">Save count & adjustment</button></div></div></div>
   </section>
+  <section id="returnsView" class="hidden"><div class="toolbar"><div><h2 style="margin:0;font-size:20px">Returns & Exchanges</h2><p>Process partial or full returns against recorded sales. Original invoices remain unchanged.</p></div><div class="toolbar-actions"><button class="btn" id="returnsRefresh">↻ Refresh</button></div></div><div class="info">Returns are separate transactions. Saleable returns increase stock; damaged returns are recorded but excluded from saleable stock. Refunds and exchange balances are recorded for reconciliation. Test workflow only until Phase 1 POS transactions are validated.</div><div class="returns-layout"><section class="panel"><div class="panel-head"><h2>1. Find original sale</h2></div><div class="panel-body"><input id="returnSaleSearch" placeholder="Search invoice, customer or mobile"><div id="returnSaleResults" class="return-sale-results"></div></div></section><section class="panel"><div class="panel-head"><h2>2. Select items and quantities</h2><span id="returnSelectedInvoice" class="small muted">No sale selected</span></div><div class="panel-body"><div id="returnSaleDetails" class="muted">Select a recorded sale to begin.</div><div id="returnActionFields" class="hidden"><div class="section-title">Return details</div><div class="fields"><div class="field"><label>Reason *</label><select id="returnReason"><option value="">Select reason</option><option>Damaged / defective</option><option>Wrong product supplied</option><option>Customer preference</option><option>Expired product</option><option>Other</option></select></div><div class="field"><label>Settlement method *</label><select id="returnMethod"><option value="">Select method</option><option>UPI</option><option>Cash</option><option>Bank transfer</option><option>Store credit</option><option>Exchange</option></select></div></div><div class="field" style="margin-top:10px"><label>Notes</label><textarea id="returnNotes" rows="2" placeholder="Condition, approval or details"></textarea></div><div class="section-title">Exchange replacement (optional)</div><div class="fields"><div class="field"><label>Replacement product</label><select id="returnReplacementProduct"><option value="">No replacement</option></select></div><div class="field"><label>Replacement quantity</label><input id="returnReplacementQty" type="number" min="0" step="1" value="0"></div></div><div id="returnCalculation" class="summary"></div><div class="footer-actions"><button class="btn primary" id="submitReturn">Post return / exchange</button></div></div></div></section></div><div class="panel" style="margin-top:16px"><div class="panel-head"><h2>Recent return transactions</h2></div><div class="panel-body"><div style="overflow:auto"><table class="inv-table"><thead><tr><th>Return ref</th><th>Original invoice</th><th>Date</th><th>Customer</th><th>Items</th><th>Return value</th><th>Replacement</th><th>Settlement</th><th>Reason</th></tr></thead><tbody id="returnHistoryRows"></tbody></table></div></div></div></section>
   <section id="productMasterView">
    <div class="toolbar"><div><h2 style="margin:0;font-size:20px">Product Master</h2><p>Central product catalogue shared with POS. Create and maintain product details here.</p></div><div class="toolbar-actions"><button class="btn primary" id="masterAddProductBtn">+ Add product</button></div></div>
    <div class="panel">
@@ -399,6 +402,8 @@ const $=id=>document.getElementById(id);
 let products=[];
 let inventoryMovements=[];
 let inventoryCounts=[];
+let returnTransactions=[];
+let selectedReturnSaleId=null;
 let customers=[];
 let cart=[],type="retail",salesChannel="shop",drafts=[],sales=[],settings=JSON.parse(localStorage.getItem("wwos_settings")||"{}");
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -468,11 +473,13 @@ async function loadFromFirestore(){
  customers=customerSnap.docs.map(d=>({...d.data(),customerId:d.id}));
  drafts=draftSnap.docs.map(d=>d.data()).sort((a,b)=>String(b.created||"").localeCompare(String(a.created||"")));
  sales=salesSnap.docs.map(d=>d.data()).sort((a,b)=>String(b.created||"").localeCompare(String(a.created||"")));
+  let returnsSnap={docs:[]},returnsReadWarning=false;try{returnsSnap=await getDocs(collection(db,"returns"));}catch(e){returnsReadWarning=true;console.warn("Returns collection unavailable; publish its Firestore rule.",e);}
+  returnTransactions=returnsSnap.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>String(b.created||"").localeCompare(String(a.created||"")));
  if(settingsSnap.exists())settings=settingsSnap.data();
  inventoryMovements=movementSnap.docs.map(d=>({...d.data(),id:d.id}));
  inventoryCounts=countSnap.docs.map(d=>({...d.data(),id:d.id}));
  persistLocalOnly();
- renderProducts();renderCart();renderProductMaster();renderInventory();updateCategoryOptions();refreshCustomerSuggestions();
+ renderProducts();renderCart();renderProductMaster();renderInventory();renderReturns();updateCategoryOptions();refreshCustomerSuggestions();
  if(inventoryReadWarning){
    setCloudStatus("Cloud connected · Inventory permissions need attention",true);
    toast("Workspace loaded. Inventory data is unavailable until Firestore inventory rules are published.");
@@ -559,11 +566,12 @@ const moduleInfo={
  admin:{title:"Administration",desc:"Workspace configuration, users and access control.",tiles:[["Users & roles","Staff accounts and permissions"],["Business profile","Legal entity and tax configuration"],["Audit trail","User activity and change history"],["System settings","Numbering, preferences and integrations"]]}
 };
 function showView(view){
- const valid=["dashboard","pos","products",...Object.keys(moduleInfo).filter(x=>x!=="dashboard")];
+ const valid=["dashboard","pos","products","returns",...Object.keys(moduleInfo).filter(x=>x!=="dashboard")];
  if(!valid.includes(view))view="dashboard";
- ["dashboardView","moduleView","productMasterView","posView","inventoryView"].forEach(id=>{const el=$(id);if(el)el.classList.add("hidden");});
+ ["dashboardView","moduleView","productMasterView","posView","inventoryView","returnsView"].forEach(id=>{const el=$(id);if(el)el.classList.add("hidden");});
  if(view==="dashboard"){if($("dashboardView"))$("dashboardView").classList.remove("hidden");}
  else if(view==="inventory"){if($("inventoryView"))$("inventoryView").classList.remove("hidden");renderInventory();}
+ else if(view==="returns"){if($("returnsView"))$("returnsView").classList.remove("hidden");renderReturns();}
  else if(view==="products"){if($("productMasterView"))$("productMasterView").classList.remove("hidden");}
  else if(view==="pos"){if($("posView"))$("posView").classList.remove("hidden");}
  else{
@@ -574,17 +582,17 @@ function showView(view){
   if($("moduleTiles"))$("moduleTiles").innerHTML=info.tiles.map(t=>`<div class="module-tile"><strong>${escapeHtml(t[0])}</strong><span>${escapeHtml(t[1])}</span><em>Foundation only · Not active</em></div>`).join("");
  }
  document.querySelectorAll(".nav button[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
- const labels={dashboard:"Business Dashboard",pos:"POS & Billing",products:"Product Master"};
+ const labels={dashboard:"Business Dashboard",pos:"POS & Billing",products:"Product Master",returns:"Returns & Exchanges"};
  const title=labels[view]||(moduleInfo[view]&&moduleInfo[view].title)||"Business Dashboard";
  const crumb=document.querySelector(".topbar .crumb"),heading=document.querySelector(".topbar h1");
  if(crumb)crumb.textContent="Wellwith OS / "+title;if(heading)heading.textContent=title;
- if(view==="products")renderProductMaster();if(view==="inventory")renderInventory();if(view==="dashboard")renderDashboard();
+ if(view==="products")renderProductMaster();if(view==="inventory")renderInventory();if(view==="returns")renderReturns();if(view==="dashboard")renderDashboard();
  if(view==="pos"){renderProducts();renderCart();}
 }
 function renderDashboard(){
  if(!$("dashboardModules"))return;
  if($("dashProductCount"))$("dashProductCount").textContent=products.filter(p=>p.active!==false).length;
- const items=[["dashboard","Dashboard","Business overview"],["pos","POS & Billing","Retail and B2B billing"],["products","Product Master","Central product catalogue"],["crm","CRM","Customers and follow-ups"],["books","Books & Accounts","Ledgers and accounting"],["inventory","Inventory","Stock and movements"],["purchases","Purchases","Procurement and GRN"],["expenses","Expenses","Expense management"],["hr","HR & Payroll","People and payroll"],["marketing","Marketing","Campaigns and leads"],["reports","Reports & Analytics","Business intelligence"],["admin","Administration","Users and settings"]];
+ const items=[["dashboard","Dashboard","Business overview"],["pos","POS & Billing","Retail and B2B billing"],["returns","Returns & Exchanges","Refunds and exchanges"],["products","Product Master","Central product catalogue"],["crm","CRM","Customers and follow-ups"],["books","Books & Accounts","Ledgers and accounting"],["inventory","Inventory","Stock and movements"],["purchases","Purchases","Procurement and GRN"],["expenses","Expenses","Expense management"],["hr","HR & Payroll","People and payroll"],["marketing","Marketing","Campaigns and leads"],["reports","Reports & Analytics","Business intelligence"],["admin","Administration","Users and settings"]];
  $("dashboardModules").innerHTML=items.map(x=>`<button class="module-tile" data-open-module="${x[0]}"><strong>${x[1]}</strong><span>${x[2]}</span><em>${["dashboard","pos","products"].includes(x[0])?"Core workspace":"Foundation only"}</em></button>`).join("");
  $("dashboardModules").querySelectorAll("[data-open-module]").forEach(b=>b.onclick=()=>showView(b.dataset.openModule));
 }
