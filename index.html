@@ -833,7 +833,7 @@ async function upsertCustomerFromSale(s){
  await setDoc(doc(db,"customers",customerId),{...record,updatedBy:currentUser.uid},{merge:true});
  persistLocalOnly();refreshCustomerSuggestions();return customerId;
 }
-function snapshot(){const subtotal=calc().total,deliveryCharge=salesChannel==="online"?(Number($("deliveryCharge").value)||0):0,packagingCost=salesChannel==="online"?(Number($("packagingCost").value)||0):0;return {id:Date.now(),salesChannel,channelLabel:({shop:"Shop",b2b:"B2B",online:"Online"})[salesChannel],orderSource:saleSourceValue(),deliveryCharge,packagingCost,type,customer:$("customerName").value.trim()||(salesChannel==="shop"?"Walk-in customer":""),mobile:$("mobile").value.trim(),gstin:$("gstin").value.trim(),legalName:$("legalName").value.trim(),tradeName:$("tradeName").value.trim(),address:$("address").value.trim(),supply:$("supplyState").value,items:cart.map(x=>({...x})),discount:Number($("discount").value)||0,payment:$("payment").value,splitUpi:Number($("splitUpi").value)||0,splitCash:Number($("splitCash").value)||0,subtotal,total:subtotal+deliveryCharge,created:new Date().toISOString()}}
+function snapshot(){const subtotal=calc().total,deliveryCharge=salesChannel==="online"?(Number($("deliveryCharge").value)||0):0,packagingCost=salesChannel==="online"?(Number($("packagingCost").value)||0):0;return {id:crypto.randomUUID(),salesChannel,channelLabel:({shop:"Shop",b2b:"B2B",online:"Online"})[salesChannel],orderSource:saleSourceValue(),deliveryCharge,packagingCost,type,customer:$("customerName").value.trim()||(salesChannel==="shop"?"Walk-in customer":""),mobile:$("mobile").value.trim(),gstin:$("gstin").value.trim(),legalName:$("legalName").value.trim(),tradeName:$("tradeName").value.trim(),address:$("address").value.trim(),supply:$("supplyState").value,items:cart.map(x=>({...x})),discount:Number($("discount").value)||0,payment:$("payment").value,splitUpi:Number($("splitUpi").value)||0,splitCash:Number($("splitCash").value)||0,subtotal,total:subtotal+deliveryCharge,created:new Date().toISOString()}}
 function resetCurrentBill(){
  cart=[];
  ["customerName","mobile","gstin","legalName","tradeName","address"].forEach(id=>{if($(id))$(id).value="";});
@@ -844,7 +844,7 @@ function resetCurrentBill(){
 function holdCurrentBill(){
  if(!cart.length)return toast("Add products before holding a bill.");
  if(!saleSourceValue())return toast("Select the sale source before holding this bill.");
- const held={...snapshot(),id:Date.now(),status:"Held",heldAt:new Date().toISOString()};
+ const held={...snapshot(),id:crypto.randomUUID(),status:"Held",heldAt:new Date().toISOString()};
  drafts.unshift(held);persist();resetCurrentBill();toast("Bill held. You can start another customer’s billing now.");
 }
 function saveDraft(){if(!cart.length)return toast("Add at least one product.");if(!saleSourceValue())return toast("Select the sale source first.");drafts.unshift(snapshot());persist();toast("Draft saved. Cloud sync will run automatically when connected.")}
