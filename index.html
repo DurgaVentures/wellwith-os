@@ -412,8 +412,10 @@ async function syncToFirestore(){
  setCloudStatus("Syncing…");
  const writes=[];
  for(const p of products){
-   const id=String(p.sku||p.name).replace(/[^a-zA-Z0-9_-]/g,"_");
-   writes.push(setDoc(doc(db,"products",id),{...p,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid},{merge:true}));
+   // Keep the Firestore document ID created or loaded for this product. Rebuilding it from SKU/name can create duplicate records on every sync.
+   const id=String(p.productId||p.sku||p.name||"").trim();
+   if(!id)throw new Error("A product is missing its Firestore document ID and fallback identifier.");
+   writes.push(setDoc(doc(db,"products",id),{...p,productId:id,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid},{merge:true}));
  }
  for(const c of customers){
    writes.push(setDoc(doc(db,"customers",String(c.customerId)),{...c,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid},{merge:true}));
