@@ -34,6 +34,22 @@ Emulator endpoints:
 4. Use clearly synthetic product names and IDs. Do not import production exports or customer data.
 5. Keep the emulator running while executing browser tests.
 
+## Open the app in emulator mode
+
+In a second terminal, from the repository root, serve the app locally:
+
+```bash
+python -m http.server 5500
+```
+
+Open:
+
+```
+http://127.0.0.1:5500/index.html?environment=emulator
+```
+
+The app connects to Auth emulator port 9099 and Firestore emulator port 8080, changes the Firebase project ID to `demo-wellwith-os`, and displays a red emulator-only banner. The flag is accepted only on `localhost` or `127.0.0.1`. A hosted page or normal URL does not enable emulator mode. Do not use the ordinary production URL for emulator tests.
+
 The rules in `firestore.rules` reproduce the access model described in the currently supplied production rules. Compare them against the complete deployed rules before relying on authorization test results.
 
 ## Phase 1 test cases
@@ -48,4 +64,4 @@ The rules in `firestore.rules` reproduce the access model described in the curre
 
 ## Current status
 
-This is emulator configuration and a test plan only. The app's explicit emulator connection switch, deterministic seed script, automated browser tests, and transaction test execution are still pending. No production Firebase data is changed by these files.
+This is emulator configuration and a test plan only. The app's explicit localhost-only emulator connection switch is now implemented. Deterministic seed script, automated browser tests, syntax/runtime verification, and transaction test execution are still pending. No production Firebase data is changed by these files.
