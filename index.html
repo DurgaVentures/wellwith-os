@@ -359,7 +359,7 @@ import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
-  getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, runTransaction, serverTimestamp
+  getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, runTransaction, serverTimestamp, query, where
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -868,26 +868,93 @@ function showHistory(){
 async function finalizeSale(){
  if(!cart.length)return toast("Add at least one product before completing a sale.");
  const s=snapshot();
- if(!s.orderSource){toast("Select the sale source before recording this sale.");return}
- if(s.type==="b2b"&&!validateGSTIN(s.gstin).ok){toast("Enter a valid 15-character GSTIN for B2B billing.");return}
- if(s.payment==="Split payment"&&Math.abs((s.splitUpi+s.splitCash)-s.total)>0.01){toast("Split payment amounts must add up to the bill total.");return}
- if(cart.some(x=>x.gst===null||!x.hsn)){toast("Configure HSN and GST rates for every product before completing a test sale.");return}
- if(!settings.bizGstin||!settings.bizAddress){toast("Enter the business GSTIN and registered address in POS Settings first.");return}
- const series=invoiceSeriesFor(s.salesChannel||"shop");
- const seq=Number(series.next)||1;
- s.invoiceNo=series.prefix+String(seq).padStart(4,"0");
- s.paymentStatus=s.payment==="Credit"?"Pending":"Paid";
- s.recordType="LOCAL_TEST_ONLY";
- if(!confirm(`Confirm this local test sale for ${money(s.total)}? Payment status: ${s.paymentStatus}. This does NOT issue a legally valid GST invoice.`))return;
- try{await upsertCustomerFromSale(s);}catch(e){console.error("Customer save failed",e);toast("Customer profile could not be saved. Sale was not recorded.");return}
- sales.unshift(s);
- if(s.salesChannel==="b2b")settings.b2bNextNumber=seq+1;
- else if(s.salesChannel==="online")settings.onlineNextNumber=seq+1;
- else settings.shopNextNumber=seq+1;
- persist();
- $("receipt").innerHTML=buildInvoice(s);
- close("previewModal");
- resetCurrentBill();toast(`Test sale recorded: ${s.invoiceNo} · Cloud sync queued`);
+ if(!s.orderSource)return toast("Select the sale source before recording this sale.");
+ if(s.type==="b2b"&&!validateGSTIN(s.gstin).ok)return toast("Enter a valid 15-character GSTIN for B2B billing.");
+ if(s.payment==="Split payment"&&Math.abs((s.splitUpi+s.splitCash)-s.total)>0.01)return toast("Split payment amounts must add up to the bill total.");
+ if(cart.some(x=>x.gst===null||!x.hsn))return toast("Configure HSN and GST rates for every product before completing a test sale.");
+ if(!settings.bizGstin||!settings.bizAddress)return toast("Enter the business GSTIN and registered address in POS Settings first.");
+ if(!currentUser||!activeProfile)return toast("Sign in with an active account before recording a sale.");
+ if(!navigator.onLine)return toast("Internet connection is required to complete a sale safely.");
+ const channel=s.salesChannel||"shop";
+ const prefix=invoiceSeriesFor(channel).prefix;
+ const saleRef=doc(db,"sales",s.id);
+ const settingsRef=doc(db,"settings","pos");
+ const normalizedMobile=String(s.mobile||"").replace(/\\D/g,"");
+ const normalizedGstin=String(s.gstin||"").trim().toUpperCase();
+ const customerId=normalizedMobile?("mob_"+normalizedMobile):(normalizedGstin?("gst_"+normalizedGstin):"");
+ const customerRef=customerId?doc(db,"customers",customerId):null;
+ const movementWrites=[];
+ const itemGroups=new Map();
+ for(const item of s.items){
+  if(!item.productId)return toast("A cart item is missing its product ID. Remove it and add the product again.");
+  const existing=itemGroups.get(item.productId)||{item,qty:0};
+  existing.qty+=Number(item.qty)||0;itemGroups.set(item.productId,existing);
+ }
+ if([...itemGroups.values()].some(x=>!Number.isFinite(x.qty)||x.qty<=0))return toast("Every product quantity must be greater than zero.");
+ if(!confirm(`Confirm this LOCAL TEST sale for ${money(s.total)}? This is not a legally valid GST invoice.`))return;
+ const completeButton=$("completeSale");if(completeButton){completeButton.disabled=true;completeButton.textContent="Saving sale…";}
+ try{
+  await runTransaction(db,async tx=>{
+   const [settingsSnap,saleSnap]=await Promise.all([tx.get(settingsRef),tx.get(saleRef)]);
+   if(saleSnap.exists())throw new Error("This sale ID has already been recorded. Do not retry with a new bill.");
+   const currentSettings=settingsSnap.exists()?settingsSnap.data():settings;
+   const counterField=channel==="b2b"?"b2bNextNumber":channel==="online"?"onlineNextNumber":"shopNextNumber";
+   const legacyField=channel==="shop"?"nextNumber":null;
+   const seq=Math.max(1,Number(currentSettings[counterField]??(legacyField?currentSettings[legacyField]:1))||1);
+   s.invoiceNo=prefix+String(seq).padStart(4,"0");
+   s.paymentStatus=s.payment==="Credit"?"Pending":"Paid";
+   s.recordType="LOCAL_TEST_ONLY";
+   s.customerId=customerId||null;
+   const productReads=[];
+   for(const {item,qty} of itemGroups.values()){
+    const productRef=doc(db,"products",item.productId);
+    const movementQuery=query(collection(db,"inventoryMovements"),where("productId","==",item.productId));
+    productReads.push({item,qty,productRef,movementQuery});
+   }
+   const stockSnapshots=await Promise.all(productReads.flatMap(x=>[tx.get(x.productRef),tx.get(x.movementQuery)]));
+   let readIndex=0;
+   const stockResults=[];
+   for(const entry of productReads){
+    const productSnap=stockSnapshots[readIndex++],movementSnap=stockSnapshots[readIndex++];
+    if(!productSnap.exists())throw new Error("Product no longer exists: "+entry.item.name);
+    const product={...productSnap.data(),productId:productSnap.id};
+    const onHand=Number(product.stock??product.openingStock??0)+movementSnap.docs.reduce((sum,d)=>sum+movementDelta(d.data()),0);
+    const reserved=movementSnap.docs.reduce((sum,d)=>sum+(d.data().type==="reserve"?Number(d.data().quantity||0):0),0);
+    if(onHand-reserved<entry.qty)throw new Error("Insufficient available stock for "+entry.item.name+". Available: "+Math.max(0,onHand-reserved)+", requested: "+entry.qty);
+    stockResults.push({entry,product});
+   }
+   let customerRecord=null;
+   if(customerRef){
+    const customerSnap=await tx.get(customerRef);
+    const old=customerSnap.exists()?customerSnap.data():{};
+    customerRecord={...old,customerId,displayName:s.customer||old.displayName||"",customerName:s.customer||old.customerName||"",mobile:normalizedMobile||old.mobile||"",gstin:normalizedGstin||old.gstin||"",legalName:s.legalName||old.legalName||"",tradeName:s.tradeName||old.tradeName||"",address:s.address||old.address||"",customerType:channel==="b2b"?"B2B":(old.customerType||"Retail"),lastSalesChannel:channel,lastSaleSource:s.orderSource||"",lastPurchaseAt:s.created,updatedAt:new Date().toISOString(),totalOrders:Number(old.totalOrders||0)+1,totalSpend:Number(old.totalSpend||0)+Number(s.total||0),updatedBy:currentUser.uid};
+   }
+   const nextSettings={...currentSettings,[counterField]:seq+1,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid};
+   tx.set(saleRef,{...s,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid});
+   for(const {entry,product} of stockResults){
+    const movementRef=doc(collection(db,"inventoryMovements"));
+    const movement={productId:entry.item.productId,productName:product.name||entry.item.name,type:"outward",quantity:entry.qty,reference:s.invoiceNo,notes:"POS sale",created:s.created,createdBy:currentUser.uid,saleId:s.id,invoiceNo:s.invoiceNo};
+    tx.set(movementRef,movement);
+    movementWrites.push({...movement,id:movementRef.id});
+   }
+   if(customerRef&&customerRecord)tx.set(customerRef,customerRecord,{merge:true});
+   tx.set(settingsRef,nextSettings,{merge:true});
+  });
+  sales.unshift(s);
+  inventoryMovements.unshift(...movementWrites);
+  if(customerId){const local=customers.find(c=>c.customerId===customerId);const updated={...(local||{}),customerId,displayName:s.customer||local?.displayName||"",customerName:s.customer||local?.customerName||"",mobile:normalizedMobile||local?.mobile||"",gstin:normalizedGstin||local?.gstin||"",lastSalesChannel:channel,lastSaleSource:s.orderSource||"",lastPurchaseAt:s.created,totalOrders:Number(local?.totalOrders||0)+1,totalSpend:Number(local?.totalSpend||0)+Number(s.total||0)};customers=customers.filter(c=>c.customerId!==customerId);customers.unshift(updated);}
+  if(channel==="b2b")settings.b2bNextNumber=(Number(settings.b2bNextNumber)||1)+1;
+  else if(channel==="online")settings.onlineNextNumber=(Number(settings.onlineNextNumber)||1)+1;
+  else settings.shopNextNumber=(Number(settings.shopNextNumber??settings.nextNumber)||1)+1;
+  persistLocalOnly();renderInventory();
+  $("receipt").innerHTML=buildInvoice(s);close("previewModal");resetCurrentBill();
+  toast(`Test sale recorded atomically: ${s.invoiceNo}`);
+ }catch(e){
+  console.error("Atomic POS sale failed:",e);
+  toast(e?.message||"Sale could not be completed. No sale or stock movement should have been committed.");
+ }finally{
+  if(completeButton){completeButton.disabled=false;completeButton.textContent="Complete sale";}
+ }
 }
 
 
