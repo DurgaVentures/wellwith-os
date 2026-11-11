@@ -26,6 +26,7 @@ service cloud.firestore {
           'customers',
           'drafts',
           'sales',
+          'returns',
           'settings',
           'auditLogs',
           'inventoryMovements',
