@@ -896,6 +896,7 @@ async function finalizeSale(){
  const completeButton=$("completeSale");if(completeButton){completeButton.disabled=true;completeButton.textContent="Saving sale…";}
  try{
   await runTransaction(db,async tx=>{
+   movementWrites.length=0;
    const [settingsSnap,saleSnap]=await Promise.all([tx.get(settingsRef),tx.get(saleRef)]);
    if(saleSnap.exists())throw new Error("This sale ID has already been recorded. Do not retry with a new bill.");
    const currentSettings=settingsSnap.exists()?settingsSnap.data():settings;
