@@ -985,6 +985,89 @@ async function finalizeSale(){
 }
 
 
+
+function returnRemainingByProduct(sale, priorReturns){
+ const used={};for(const r of priorReturns)for(const line of (r.items||[])){const id=String(line.productId||"");used[id]=(used[id]||0)+Number(line.quantity||0);}
+ const totals={};for(const line of (sale.items||[])){const id=String(line.productId||"");totals[id]=(totals[id]||0)+Number(line.qty||0);}
+ return Object.fromEntries(Object.entries(totals).map(([id,q])=>[id,Math.max(0,q-(used[id]||0))]));
+}
+function returnSalePrior(id){return returnTransactions.filter(r=>r.saleId===id);}
+function renderReturns(){
+ if(!$("returnSaleResults"))return;
+ $("returnReplacementProduct").innerHTML='<option value="">No replacement</option>'+products.filter(p=>p.active!==false).map(p=>`<option value="${escapeHtml(p.productId)}">${escapeHtml(p.name)} · ${money(p.price||0)}</option>`).join("");
+ renderReturnSaleSearch();renderReturnHistory();
+ if(selectedReturnSaleId&&sales.some(s=>s.id===selectedReturnSaleId))selectReturnSale(selectedReturnSaleId);
+}
+function renderReturnSaleSearch(){
+ const q=String($("returnSaleSearch")?.value||"").trim().toLowerCase();
+ const rows=sales.filter(s=>[s.invoiceNo,s.customer,s.mobile,s.gstin].some(v=>String(v||"").toLowerCase().includes(q)));
+ $("returnSaleResults").innerHTML=rows.slice(0,100).map(s=>{
+  const left=returnRemainingByProduct(s,returnSalePrior(s.id)),can=Object.values(left).some(n=>n>0);
+  return `<button type="button" class="return-sale-option ${selectedReturnSaleId===s.id?"active":""}" data-return-sale="${escapeHtml(s.id)}" ${can?"":"disabled"}><strong>${escapeHtml(s.invoiceNo||"Sale")} · ${money(s.total)}</strong><span>${escapeHtml(s.customer||"Walk-in")} · ${escapeHtml(s.mobile||"No mobile")} · ${new Date(s.created).toLocaleDateString("en-IN")}</span><span>${can?"Returnable quantity available":"Fully returned / no returnable quantity"}</span></button>`;
+ }).join("")||'<div class="small muted" style="padding:12px">No recorded sales match this search.</div>';
+ $("returnSaleResults").querySelectorAll("[data-return-sale]").forEach(b=>b.onclick=()=>selectReturnSale(b.dataset.returnSale));
+}
+function selectReturnSale(id){
+ const sale=sales.find(s=>s.id===id);if(!sale)return;selectedReturnSaleId=id;
+ $("returnSelectedInvoice").textContent=sale.invoiceNo||sale.id;
+ const prior=returnSalePrior(id),left=returnRemainingByProduct(sale,prior),usedValue=prior.reduce((n,r)=>n+Number(r.returnValue||0),0);
+ const rows=(sale.items||[]).map((x,i)=>{const rem=left[String(x.productId)]||0,returned=Math.max(0,Number(x.qty||0)-rem);return `<tr><td><b>${escapeHtml(x.name)}</b><div class="small muted">${money(x.price)} each</div></td><td>${Number(x.qty||0)}</td><td>${returned}</td><td>${rem}</td><td><input type="number" min="0" max="${rem}" step="1" value="0" data-return-qty data-product-id="${escapeHtml(x.productId)}" data-line-index="${i}" ${rem<=0?"disabled":""}></td><td><select data-return-condition data-product-id="${escapeHtml(x.productId)}"><option value="saleable">Saleable</option><option value="damaged">Damaged / expired</option></select></td></tr>`;}).join("");
+ $("returnSaleDetails").innerHTML=`<div class="info"><b>${escapeHtml(sale.invoiceNo||"Recorded sale")}</b> · ${escapeHtml(sale.customer||"Walk-in")} · ${money(sale.total)}<br>Purchased: ${new Date(sale.created).toLocaleString("en-IN")} · Previously returned value: ${money(usedValue)}<br>Delivery charges are excluded from refundable item value.</div><div style="overflow:auto"><table class="return-lines"><thead><tr><th>Product</th><th>Sold</th><th>Returned</th><th>Remaining</th><th>Return qty</th><th>Condition</th></tr></thead><tbody>${rows}</tbody></table></div><div class="small muted" style="margin-top:8px">Refund value uses original item prices less a proportional share of the original discount. Original sale is not modified.</div>`;
+ $("returnActionFields").classList.remove("hidden");$("returnReason").value="";$("returnMethod").value="";$("returnNotes").value="";$("returnReplacementProduct").value="";$("returnReplacementQty").value="0";
+ $("returnSaleDetails").querySelectorAll("[data-return-qty],[data-return-condition]").forEach(el=>{el.addEventListener("input",renderReturnCalculation);el.addEventListener("change",renderReturnCalculation);});
+ renderReturnSaleSearch();renderReturnCalculation();
+}
+function getReturnSelection(){
+ const sale=sales.find(s=>s.id===selectedReturnSaleId);if(!sale)return {sale:null,items:[],returnValue:0};
+ const remaining=returnRemainingByProduct(sale,returnSalePrior(sale.id)),gross=(sale.items||[]).reduce((n,x)=>n+Number(x.price||0)*Number(x.qty||0),0),discount=Math.min(gross,Math.max(0,Number(sale.discount||0))),items=[];
+ for(const input of $("returnSaleDetails").querySelectorAll("[data-return-qty]")){
+  const qty=Number(input.value||0),id=input.dataset.productId;
+  if(!Number.isInteger(qty)||qty<0||qty>(remaining[id]||0))return {sale,items:[],returnValue:0,error:"Return quantity must be a whole number within the remaining quantity."};
+  if(!qty)continue;
+  const original=sale.items[Number(input.dataset.lineIndex)],unitNet=Number(original.price||0)*(1-(gross?discount/gross:0));
+  const condition=$("returnSaleDetails").querySelector(`[data-return-condition][data-product-id="${CSS.escape(id)}"]`)?.value||"saleable";
+  items.push({productId:id,productName:original.name,quantity:qty,unitPrice:Number(original.price||0),lineReturnValue:unitNet*qty,condition});
+ }
+ return {sale,items,returnValue:items.reduce((n,x)=>n+x.lineReturnValue,0)};
+}
+function renderReturnCalculation(){
+ if(!$("returnCalculation"))return;const x=getReturnSelection(),p=products.find(v=>v.productId===$("returnReplacementProduct").value),qty=Number($("returnReplacementQty").value||0),replacementValue=p&&qty>0?Number(p.price||0)*qty:0,balance=replacementValue-x.returnValue;
+ $("returnCalculation").innerHTML=`<div class="sumrow"><span>Selected return value</span><b>${money(x.returnValue)}</b></div><div class="sumrow"><span>Replacement value</span><b>${money(replacementValue)}</b></div><div class="sumrow total"><span>${balance>0?"Customer pays":balance<0?"Refund due":"Net settlement"}</span><b>${money(Math.abs(balance))}</b></div>${x.error?`<div class="note">${escapeHtml(x.error)}</div>`:""}`;
+}
+function renderReturnHistory(){
+ $("returnHistoryRows").innerHTML=returnTransactions.slice(0,100).map(r=>`<tr><td><b>${escapeHtml(r.returnRef||r.id)}</b></td><td>${escapeHtml(r.originalInvoice||"—")}</td><td>${escapeHtml(r.created||"—")}</td><td>${escapeHtml(r.customer||"—")}</td><td>${(r.items||[]).map(x=>escapeHtml(x.productName)+" × "+x.quantity).join("<br>")}</td><td>${money(r.returnValue)}</td><td>${r.replacement?escapeHtml(r.replacement.productName)+" × "+r.replacement.quantity+" · "+money(r.replacement.value):"—"}</td><td>${escapeHtml(r.settlementLabel||r.settlementMethod||"—")} · ${money(Math.abs(Number(r.settlementAmount||0)))}</td><td>${escapeHtml(r.reason||"—")}</td></tr>`).join("")||'<tr><td colspan="9" class="muted">No return transactions yet.</td></tr>';
+}
+async function postReturnTransaction(){
+ const x=getReturnSelection(),sale=x.sale;if(!sale)return toast("Select an original sale first.");if(x.error)return toast(x.error);if(!x.items.length)return toast("Enter a return quantity for at least one item.");
+ const reason=$("returnReason").value,method=$("returnMethod").value;if(!reason||!method)return toast("Select a return reason and settlement method.");
+ const replacementId=$("returnReplacementProduct").value,replacementQty=Number($("returnReplacementQty").value||0),replacement=products.find(p=>p.productId===replacementId);
+ if(!Number.isInteger(replacementQty)||replacementQty<0)return toast("Replacement quantity must be a whole number.");
+ if(replacementQty>0&&!replacement)return toast("Select a valid replacement product.");if(replacementQty===0&&replacementId)return toast("Enter a replacement quantity or clear the product.");
+ if(method==="Exchange"&&replacementQty===0)return toast("Select a replacement product and quantity for an exchange.");if(method!=="Exchange"&&replacementQty>0)return toast("Choose Exchange as the settlement method when adding a replacement.");
+ if(!currentUser||!activeProfile||!navigator.onLine)return toast("An active account and internet connection are required.");
+ const replacementValue=replacement?Number(replacement.price||0)*replacementQty:0,settlementAmount=x.returnValue-replacementValue,created=new Date().toISOString(),id=crypto.randomUUID(),returnRef="RET-"+created.slice(0,10).replaceAll("-","")+"-"+id.slice(0,6).toUpperCase();
+ const record={id,returnRef,saleId:sale.id,originalInvoice:sale.invoiceNo||"",customer:sale.customer||"",mobile:sale.mobile||"",items:x.items,returnValue:x.returnValue,replacement:replacement?{productId:replacement.productId,productName:replacement.name,quantity:replacementQty,unitPrice:Number(replacement.price||0),value:replacementValue}:null,settlementMethod:method,settlementAmount,settlementLabel:settlementAmount>0?"Refund due":settlementAmount<0?"Amount to collect":"No balance",reason,notes:$("returnNotes").value.trim(),created,createdBy:currentUser.uid,recordType:"LOCAL_TEST_ONLY"};
+ if(!confirm(`Post ${returnRef} against ${sale.invoiceNo||"selected sale"}? Return ${money(x.returnValue)}; ${settlementAmount>0?"refund due "+money(settlementAmount):settlementAmount<0?"collect "+money(-settlementAmount):"no balance due"}.`))return;
+ const btn=$("submitReturn");btn.disabled=true;btn.textContent="Posting…";
+ try{
+  const saleRef=doc(db,"sales",sale.id),returnDocRef=doc(db,"returns",id),priorQuery=query(collection(db,"returns"),where("saleId","==",sale.id)),ids=[...new Set([...x.items.filter(v=>v.condition==="saleable").map(v=>v.productId),...(replacement?[replacement.productId]:[])])],refs=ids.map(pid=>({id:pid,ref:doc(db,"products",pid),moves:query(collection(db,"inventoryMovements"),where("productId","==",pid))})),writes=[];
+  await runTransaction(db,async tx=>{
+   writes.length=0;const [saleSnap,dupSnap,priorSnap]=await Promise.all([tx.get(saleRef),tx.get(returnDocRef),tx.get(priorQuery)]);
+   if(!saleSnap.exists())throw new Error("Original sale was not found in cloud records.");if(dupSnap.exists())throw new Error("This return has already been posted.");
+   const cloudSale=saleSnap.data(),used={};for(const d of priorSnap.docs)for(const v of d.data().items||[]){const pid=String(v.productId||"");used[pid]=(used[pid]||0)+Number(v.quantity||0);}
+   for(const v of x.items){const sold=(cloudSale.items||[]).filter(z=>String(z.productId)===v.productId).reduce((n,z)=>n+Number(z.qty||0),0);if((used[v.productId]||0)+v.quantity>sold)throw new Error("Return quantity exceeds remaining sold quantity for "+v.productName+". Refresh and retry.");}
+   const snaps=await Promise.all(refs.flatMap(v=>[tx.get(v.ref),tx.get(v.moves)])),state={};let ix=0;
+   for(const v of refs){const ps=snaps[ix++],ms=snaps[ix++];if(!ps.exists())throw new Error("Product no longer exists: "+v.id);const p=ps.data(),onHand=Number(p.stock??p.openingStock??0)+ms.docs.reduce((n,d)=>n+movementDelta(d.data()),0),reserved=ms.docs.reduce((n,d)=>n+(d.data().type==="reserve"?Number(d.data().quantity||0):0),0);state[v.id]={available:onHand-reserved};}
+   if(replacement&&state[replacement.productId].available<replacementQty)throw new Error("Insufficient available stock for replacement product.");
+   for(const v of x.items){const ref=doc(collection(db,"inventoryMovements")),saleable=v.condition==="saleable",m={productId:v.productId,productName:v.productName,type:saleable?"return":"return_damaged",quantity:v.quantity,reference:returnRef,notes:saleable?"Saleable customer return":"Damaged / expired customer return; excluded from saleable stock",created,createdBy:currentUser.uid,saleId:sale.id,returnId:id,invoiceNo:sale.invoiceNo||""};tx.set(ref,m);writes.push({...m,id:ref.id});}
+   if(replacement&&replacementQty>0){const ref=doc(collection(db,"inventoryMovements")),m={productId:replacement.productId,productName:replacement.name,type:"outward",quantity:replacementQty,reference:returnRef,notes:"Exchange replacement issued",created,createdBy:currentUser.uid,saleId:sale.id,returnId:id,invoiceNo:sale.invoiceNo||""};tx.set(ref,m);writes.push({...m,id:ref.id});}
+   tx.set(returnDocRef,record);
+  });
+  returnTransactions.unshift(record);inventoryMovements.unshift(...writes);persistLocalOnly();renderInventory();renderReturns();selectedReturnSaleId=sale.id;selectReturnSale(sale.id);toast("Return transaction posted: "+returnRef);
+ }catch(e){console.error("Return transaction failed:",e);toast(e?.message||"Return could not be posted. No return or stock movement should have been committed.");}
+ finally{btn.disabled=false;btn.textContent="Post return / exchange";}
+}
+
 function inventoryExpiry(p){const raw=p.expiryDate;if(!raw)return {label:"Not set",soon:false,expired:false};const d=new Date(String(raw).slice(0,10)+"T00:00:00");if(Number.isNaN(d.getTime()))return {label:"Invalid date",soon:false,expired:false};const today=new Date();today.setHours(0,0,0,0);const days=Math.round((d-today)/86400000);return {label:String(raw).slice(0,10),soon:days>=0&&days<=30,expired:days<0};}
 function movementDelta(m){const q=Number(m.quantity||0);if(m.type==="outward"||m.type==="damage")return -Math.abs(q);if(m.type==="adjustment")return q;return Math.abs(q);}
 function productStock(p){const baseline=Number(p.stock??p.openingStock??0);const moves=inventoryMovements.filter(m=>m.productId===p.productId);return baseline+moves.reduce((n,m)=>n+movementDelta(m),0);}
