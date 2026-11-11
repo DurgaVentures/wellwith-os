@@ -1028,7 +1028,9 @@ function getReturnSelection(){
   const condition=$("returnSaleDetails").querySelector(`[data-return-condition][data-product-id="${CSS.escape(id)}"]`)?.value||"saleable";
   items.push({productId:id,productName:original.name,quantity:qty,unitPrice:Number(original.price||0),lineReturnValue:unitNet*qty,condition});
  }
- return {sale,items,returnValue:items.reduce((n,x)=>n+x.lineReturnValue,0)};
+ const requested={};for(const item of items)requested[item.productId]=(requested[item.productId]||0)+item.quantity;
+ for(const [id,qty] of Object.entries(requested))if(qty>(remaining[id]||0))return {sale,items:[],returnValue:0,error:"Combined return quantity exceeds the remaining quantity for one or more products."};
+ return {sale,items,returnValue:Math.round(items.reduce((n,x)=>n+x.lineReturnValue,0)*100)/100};
 }
 function renderReturnCalculation(){
  if(!$("returnCalculation"))return;const x=getReturnSelection(),p=products.find(v=>v.productId===$("returnReplacementProduct").value),qty=Number($("returnReplacementQty").value||0),replacementValue=p&&qty>0?Number(p.price||0)*qty:0,balance=replacementValue-x.returnValue;
@@ -1055,7 +1057,8 @@ async function postReturnTransaction(){
    writes.length=0;const [saleSnap,dupSnap,priorSnap]=await Promise.all([tx.get(saleRef),tx.get(returnDocRef),tx.get(priorQuery)]);
    if(!saleSnap.exists())throw new Error("Original sale was not found in cloud records.");if(dupSnap.exists())throw new Error("This return has already been posted.");
    const cloudSale=saleSnap.data(),used={};for(const d of priorSnap.docs)for(const v of d.data().items||[]){const pid=String(v.productId||"");used[pid]=(used[pid]||0)+Number(v.quantity||0);}
-   for(const v of x.items){const sold=(cloudSale.items||[]).filter(z=>String(z.productId)===v.productId).reduce((n,z)=>n+Number(z.qty||0),0);if((used[v.productId]||0)+v.quantity>sold)throw new Error("Return quantity exceeds remaining sold quantity for "+v.productName+". Refresh and retry.");}
+   const requested={};for(const v of x.items)requested[v.productId]=(requested[v.productId]||0)+v.quantity;
+   for(const [pid,qty] of Object.entries(requested)){const sold=(cloudSale.items||[]).filter(z=>String(z.productId)===pid).reduce((n,z)=>n+Number(z.qty||0),0);if((used[pid]||0)+qty>sold)throw new Error("Return quantity exceeds remaining sold quantity for "+pid+". Refresh and retry.");}
    const snaps=await Promise.all(refs.flatMap(v=>[tx.get(v.ref),tx.get(v.moves)])),state={};let ix=0;
    for(const v of refs){const ps=snaps[ix++],ms=snaps[ix++];if(!ps.exists())throw new Error("Product no longer exists: "+v.id);const p=ps.data(),onHand=Number(p.stock??p.openingStock??0)+ms.docs.reduce((n,d)=>n+movementDelta(d.data()),0),reserved=ms.docs.reduce((n,d)=>n+(d.data().type==="reserve"?Number(d.data().quantity||0):0),0);state[v.id]={available:onHand-reserved};}
    if(replacement&&state[replacement.productId].available<replacementQty)throw new Error("Insufficient available stock for replacement product.");
