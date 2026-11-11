@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function activeUser() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.active == true;
+    }
+
+    // Mirrors the currently supplied production access model for emulator testing:
+    // any active user can read/write business collections.
+    // User profiles are readable only by their owner and are not client-writable.
+    match /users/{userId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create, update, delete: if false;
+    }
+
+    match /{collection}/{document=**} {
+      allow read, write: if activeUser()
+        && collection in [
+          'products',
+          'customers',
+          'drafts',
+          'sales',
+          'settings',
+          'auditLogs',
+          'inventoryMovements',
+          'inventoryCounts',
+          'accountingAccounts',
+          'accountingJournals',
+          'accountingParties',
+          'accountingGstTransactions',
+          'accountingPurchaseBills',
+          'accountingGoodsReceipts',
+          'accountingPurchaseOrders',
+          'accountingPurchaseBillAllocations',
+          'accountingSupplierPayments',
+          'accountingCustomerReceipts'
+        ];
+    }
+  }
+}
