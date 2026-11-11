@@ -151,6 +151,7 @@ html:fullscreen #posView>.layout{height:calc(100% - 48px)}
 </style>
 </head>
 <body>
+<div id="environmentBanner" style="display:none;background:#8b1e1e;color:#fff;padding:10px 16px;font-weight:700;text-align:center;position:sticky;top:0;z-index:9999">FIREBASE EMULATOR — TEST DATA ONLY — NOT PRODUCTION</div>
 <div id="authScreen" class="auth-screen">
   <div class="auth-card">
     <div style="font-size:11px;letter-spacing:1.5px;color:#718078;font-weight:800;margin-bottom:8px">DURGA VENTURES</div>
@@ -356,10 +357,10 @@ html:fullscreen #posView>.layout{height:calc(100% - 48px)}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, connectAuthEmulator
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
-  getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, runTransaction, serverTimestamp, query, where
+  getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, runTransaction, serverTimestamp, query, where, connectFirestoreEmulator
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -372,9 +373,24 @@ const firebaseConfig = {
   measurementId: "G-HNYGJ0T32D"
 };
 
+// Emulator mode requires BOTH an explicit URL flag and a local browser origin.
+// Any other origin/URL always uses the normal production configuration.
+const emulatorRequested = new URLSearchParams(location.search).get("environment") === "emulator";
+const localEmulatorHost = ["localhost", "127.0.0.1"].includes(location.hostname);
+const useFirebaseEmulator = emulatorRequested && localEmulatorHost;
+if (emulatorRequested && !localEmulatorHost) {
+  throw new Error("Emulator mode is allowed only from localhost or 127.0.0.1. Production connection was not changed.");
+}
+if (useFirebaseEmulator) firebaseConfig.projectId = "demo-wellwith-os";
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
+if (useFirebaseEmulator) {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+  document.getElementById("environmentBanner").style.display = "block";
+  document.title = "WELLWITH OS — FIREBASE EMULATOR";
+}
 let currentUser = null;
 let activeProfile = false;
 let editingProductSku = null;
