@@ -884,6 +884,7 @@ async function finalizeSale(){
  const customerId=normalizedMobile?("mob_"+normalizedMobile):(normalizedGstin?("gst_"+normalizedGstin):"");
  const customerRef=customerId?doc(db,"customers",customerId):null;
  const movementWrites=[];
+ let committedNextNumber=null;
  const itemGroups=new Map();
  for(const item of s.items){
   if(!item.productId)return toast("A cart item is missing its product ID. Remove it and add the product again.");
@@ -929,7 +930,8 @@ async function finalizeSale(){
     const old=customerSnap.exists()?customerSnap.data():{};
     customerRecord={...old,customerId,displayName:s.customer||old.displayName||"",customerName:s.customer||old.customerName||"",mobile:normalizedMobile||old.mobile||"",gstin:normalizedGstin||old.gstin||"",legalName:s.legalName||old.legalName||"",tradeName:s.tradeName||old.tradeName||"",address:s.address||old.address||"",customerType:channel==="b2b"?"B2B":(old.customerType||"Retail"),lastSalesChannel:channel,lastSaleSource:s.orderSource||"",lastPurchaseAt:s.created,updatedAt:new Date().toISOString(),totalOrders:Number(old.totalOrders||0)+1,totalSpend:Number(old.totalSpend||0)+Number(s.total||0),updatedBy:currentUser.uid};
    }
-   const nextSettings={...currentSettings,[counterField]:seq+1,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid};
+   committedNextNumber=seq+1;
+   const nextSettings={...currentSettings,[counterField]:committedNextNumber,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid};
    tx.set(saleRef,{...s,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid});
    for(const {entry,product} of stockResults){
     const movementRef=doc(collection(db,"inventoryMovements"));
@@ -943,9 +945,9 @@ async function finalizeSale(){
   sales.unshift(s);
   inventoryMovements.unshift(...movementWrites);
   if(customerId){const local=customers.find(c=>c.customerId===customerId);const updated={...(local||{}),customerId,displayName:s.customer||local?.displayName||"",customerName:s.customer||local?.customerName||"",mobile:normalizedMobile||local?.mobile||"",gstin:normalizedGstin||local?.gstin||"",lastSalesChannel:channel,lastSaleSource:s.orderSource||"",lastPurchaseAt:s.created,totalOrders:Number(local?.totalOrders||0)+1,totalSpend:Number(local?.totalSpend||0)+Number(s.total||0)};customers=customers.filter(c=>c.customerId!==customerId);customers.unshift(updated);}
-  if(channel==="b2b")settings.b2bNextNumber=(Number(settings.b2bNextNumber)||1)+1;
-  else if(channel==="online")settings.onlineNextNumber=(Number(settings.onlineNextNumber)||1)+1;
-  else settings.shopNextNumber=(Number(settings.shopNextNumber??settings.nextNumber)||1)+1;
+  if(channel==="b2b")settings.b2bNextNumber=committedNextNumber;
+  else if(channel==="online")settings.onlineNextNumber=committedNextNumber;
+  else settings.shopNextNumber=committedNextNumber;
   persistLocalOnly();renderInventory();
   $("receipt").innerHTML=buildInvoice(s);close("previewModal");resetCurrentBill();
   toast(`Test sale recorded atomically: ${s.invoiceNo}`);
