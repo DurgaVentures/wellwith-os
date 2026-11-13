@@ -1707,7 +1707,10 @@ function crmFindDuplicateCustomers(){
  host.innerHTML=`<table><thead><tr><th>Match key</th><th>Record</th><th>Name</th><th>Channel / type</th><th>Lead ID</th><th>Document ID</th></tr></thead><tbody>${duplicates.map(([key,items])=>items.map((e,i)=>`<tr><td>${i===0?escapeHtml(key):""}</td><td>${escapeHtml(e.kind)}</td><td>${escapeHtml(e.name)}</td><td>${escapeHtml(e.channel)}</td><td>${escapeHtml(e.leadId||"—")}</td><td><code>${escapeHtml(e.id||"—")}</code></td></tr>`).join("")).join("")}</tbody></table><p class="small muted" style="margin-top:10px">${duplicates.length} possible duplicate group(s), ${duplicates.reduce((n,x)=>n+x[1].length,0)} records. Review matches carefully: shared family/business phone numbers can be legitimate.</p>`;
 }
 function crmOpenCustomer360(rowIndex){
- const row=(window.crmChannelCustomerRows||[])[Number(rowIndex)];if(!row)return;
+ // Customer 360 markup is authored inside the CRM page. Portal it to body so it remains visible when POS is the active page.
+ const profileModal=$("crmCustomer360Modal");
+ if(profileModal && profileModal.parentElement!==document.body) document.body.appendChild(profileModal);
+ const row=(rowIndex&&typeof rowIndex==="object")?rowIndex:(window.crmChannelCustomerRows||[])[Number(rowIndex)];if(!row)return;
  const lead=row.lead||crmLeads.find(l=>row.leadId&&String(l.leadCode||l.id)===String(row.leadId))||null;
  const mobile=crmNormalizeMobile(row.mobile||row.master?.mobile||row.master?.whatsappMobile||lead?.mobile||"");
  const customerId=String(row.customerId||row.master?.customerId||"");
@@ -3764,7 +3767,7 @@ function renderPosCustomerIntelligence(customer,invoices,mobile){
  }));
  const productsBought=Object.values(bought).sort((a,b)=>b.qty-a.qty).slice(0,8);
  box.innerHTML=`<div class="pci-compact">
-  <div><span class="pci-title">Customer history</span> <span class="pci-sub">${escapeHtml(name)} · ${count} order${count===1?"":"s"}</span></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><span class="pci-title">Customer history</span> <span class="pci-sub">${escapeHtml(name)} · ${count} order${count===1?"":"s"}</span></div><button type="button" class="btn btn-sm" id="posOpenCustomer360">Open Customer 360</button></div>
   <div class="pci-quickstats"><span>Purchases <strong>${money(total)}</strong></span><span>Outstanding <strong style="${outstanding>0?"color:#a33b32":""}">${money(outstanding)}</strong></span><span>Last purchase <strong>${latest?escapeHtml(posCustomerDate(latest)):"—"}</strong></span></div>
  </div>
  <details><summary>View purchase history, products and invoices</summary><div class="pci-details">
@@ -3776,6 +3779,7 @@ function renderPosCustomerIntelligence(customer,invoices,mobile){
   <div class="pci-sub" style="margin-top:6px">Re-adding uses the current product price and checks current available stock.</div>
  </div></details>`;
  box.classList.remove("hidden");
+ const profileBtn=box.querySelector("#posOpenCustomer360");if(profileBtn)profileBtn.onclick=()=>posOpenCustomer360(customer,mobile);
  box.querySelectorAll("[data-pci-add]").forEach(btn=>btn.onclick=()=>{
    const item=productsBought[Number(btn.dataset.pciAdd)];if(!item)return;
    const p=products.find(x=>String(x.productId||"")===item.key||String(x.sku||"")===item.key||String(x.name||"").toLowerCase()===item.name.toLowerCase());
@@ -3785,6 +3789,22 @@ function renderPosCustomerIntelligence(customer,invoices,mobile){
    const idx=products.indexOf(p);
    for(let q=0;q<Math.max(1,item.qty);q++)add(idx);
    toast(`${p.name} added using current selling price, subject to stock availability.`);
+ });
+}
+function posOpenCustomer360(customer,mobile){
+ if(!customer)return;
+ const normalized=crmNormalizeMobile(mobile||customerMobileOf(customer)||customer.mobile||"");
+ const gstin=customerGstinOf(customer);
+ const lead=crmLeads.find(l=>{
+  const lm=crmNormalizeMobile(l.mobile||l.phone||"");
+  const lg=String(l.gstin||"").trim().toUpperCase();
+  return (normalized&&lm===normalized)||(gstin&&lg===gstin);
+ })||null;
+ crmOpenCustomer360({
+  name:customerNameOf(customer)||customer.businessName||customer.customerName||"Customer",
+  mobile:normalized,customerId:customer.customerId||customer.id||"",
+  leadId:lead?.leadCode||lead?.id||customer.leadId||"",
+  lead,master:customer,channel:salesChannel||"shop"
  });
 }
 async function loadPosCustomerIntelligence(customer,mobile){
@@ -3850,20 +3870,36 @@ function renderCustomerResults(query,mode="auto"){
  const mobileMode=mode==="mobile"||(mode==="auto"&&qDigits.length>=3&&qDigits.length>=q.replace(/\D/g,"").length);
  const matches=customers.filter(c=>{
   if(salesChannel==="b2b"&&c.customerType!=="B2B")return false;
-  if(mobileMode){
-   if(qDigits.length<3)return false;
-   return customerPhoneNumbers(c).some(n=>n.includes(qDigits)||n.slice(-10).includes(qDigits));
-  }
+  if(mobileMode){if(qDigits.length<3)return false;return customerPhoneNumbers(c).some(n=>n.includes(qDigits)||n.slice(-10).includes(qDigits));}
   return [customerNameOf(c),customerGstinOf(c),c.legalName||"",c.tradeName||"",c.customerId||""].some(v=>String(v).toLowerCase().includes(q));
  }).slice(0,12);
- if(!matches.length){box.innerHTML=`<div class="small muted" style="padding:12px">No saved customer found for ${mobileMode?"mobile "+escapeHtml(raw):escapeHtml(raw)}. Check the saved customer record or continue as a new customer.</div>`;box.classList.remove("hidden");return}
- box.innerHTML=matches.map(c=>`<button type="button" class="customer-result" data-customer-index="${customers.indexOf(c)}"><strong>${escapeHtml(customerNameOf(c)||"Unnamed customer")}</strong><span>${escapeHtml(customerMobileOf(c)||"No mobile saved")}${customerGstinOf(c)?" · GSTIN "+escapeHtml(customerGstinOf(c)):""}${c.address?" · "+escapeHtml(c.address):""}</span></button>`).join("");
+ // CRM leads are valid POS customer candidates even before a customer-master record exists.
+ const leadMatches=(crmLeads||[]).filter(l=>{
+  if(l.status==="Lost")return false;
+  const channel=crmLeadChannel(l);
+  if(salesChannel==="b2b"&&channel!=="b2b")return false;
+  if(salesChannel!=="b2b"&&channel==="b2b")return false;
+  if(customers.some(c=>customerPhoneNumbers(c).some(n=>n.slice(-10)===digitsOnly(l.mobile).slice(-10))&&digitsOnly(l.mobile).length>=10))return false;
+  if(mobileMode)return qDigits.length>=3&&customerPhoneNumbers(l).some(n=>n.includes(qDigits)||n.slice(-10).includes(qDigits));
+  return [l.name,l.businessName,l.mobile,l.gstin,l.leadCode,l.id].some(v=>String(v||"").toLowerCase().includes(q));
+ }).slice(0,12);
+ if(!matches.length&&!leadMatches.length){box.innerHTML=`<div class="small muted" style="padding:12px">No saved customer or CRM lead found for ${mobileMode?"mobile "+escapeHtml(raw):escapeHtml(raw)}. Check the CRM record or continue as a new customer.</div>`;box.classList.remove("hidden");return}
+ box.innerHTML=matches.map(c=>`<button type="button" class="customer-result" data-customer-index="${customers.indexOf(c)}"><strong>${escapeHtml(customerNameOf(c)||"Unnamed customer")}</strong><span>Customer Master · ${escapeHtml(customerMobileOf(c)||"No mobile saved")}${customerGstinOf(c)?" · GSTIN "+escapeHtml(customerGstinOf(c)):""}${c.address?" · "+escapeHtml(c.address):""}</span></button>`).join("")+leadMatches.map(l=>`<button type="button" class="customer-result" data-crm-lead-index="${crmLeads.indexOf(l)}"><strong>${escapeHtml(l.name||l.businessName||"Unnamed CRM lead")}</strong><span>CRM ${escapeHtml(crmLeadChannel(l).toUpperCase())} lead · ${escapeHtml(l.mobile||"No mobile saved")}${l.gstin?" · GSTIN "+escapeHtml(l.gstin):""} · ${escapeHtml(crmDisplayLeadCode(l)||"Lead ID pending")}</span></button>`).join("");
  box.classList.remove("hidden");
 }
+function selectCrmLeadForPos(lead){
+ if(!lead)return;
+ const mapped={...lead,id:"",displayName:lead.name||lead.businessName||"",customerName:lead.name||lead.businessName||"",businessName:crmLeadChannel(lead)==="b2b"?(lead.businessName||lead.name||""):lead.businessName||"",mobile:lead.mobile||lead.phone||"",whatsappMobile:lead.whatsappNumber||lead.whatsappMobile||lead.mobile||"",customerType:crmLeadChannel(lead)==="b2b"?"B2B":"Retail",gstin:lead.gstin||"",address:lead.address||lead.billingAddress||"",deliveryAddress:lead.deliveryAddress||lead.address||"",customerId:lead.customerId||"",leadId:lead.leadCode||lead.id||"",_crmLead:lead};
+ selectCustomer(mapped);
+ $("customerName").dataset.selectedLead=lead.id||"";
+ $("customerMatchStatus").textContent=`CRM lead selected · ${crmDisplayLeadCode(lead)||"Lead ID pending"} · Customer Master record will be linked when sale is completed.`;
+ $("customerMatchStatus").className="small customer-selected";
+}
+
 function selectCustomer(c){
  if(!c)return;
  $("customerName").value=customerNameOf(c);
- $("customerName").dataset.selectedCustomer=c.customerId||c.id||"";
+ $("customerName").dataset.selectedCustomer=c.customerId||c.id||"";$("customerName").dataset.selectedLead=c._crmLead?.id||"";
  const primary=c.primaryContact||c.contacts?.find(x=>x.isPrimary)||c.contacts?.[0]||{};
  $("mobile").value=String(primary.mobile||c.mobile||customerMobileOf(c)||"");
  $("gstin").value=customerGstinOf(c);
@@ -4996,10 +5032,10 @@ $("deliveryCharge").oninput=renderCart;$("packagingCost").oninput=renderCart;
 $("gstin").addEventListener("input",()=>{let v=validateGSTIN($("gstin").value);$("gstinStatus").textContent=v.message;$("gstinStatus").style.color=v.ok?"#805613":"#738078";});
 $("customerName").addEventListener("input",e=>{const typed=e.target.value;$("customerMatchStatus").textContent="Search by name, or use mobile number for the most reliable match.";$("customerMatchStatus").className="small muted";renderCustomerResults(typed,"name");});
 $("customerName").addEventListener("focus",e=>{if(e.target.value.trim())renderCustomerResults(e.target.value,"name");});
-$("customerResults").addEventListener("click",e=>{const b=e.target.closest("[data-customer-index]");if(b)selectCustomer(customers[Number(b.dataset.customerIndex)]);});
+$("customerResults").addEventListener("click",e=>{const leadButton=e.target.closest("[data-crm-lead-index]");if(leadButton){selectCrmLeadForPos(crmLeads[Number(leadButton.dataset.crmLeadIndex)]);return;}const b=e.target.closest("[data-customer-index]");if(b)selectCustomer(customers[Number(b.dataset.customerIndex)]);});
 $("saveB2BCustomer").onclick=saveB2BCustomerMaster;
 $("customerName").addEventListener("input",e=>{e.target.dataset.selectedCustomer="";if(salesChannel==="b2b"&&e.target.value.trim())renderCustomerResults(e.target.value,"name");});
-$("mobile").addEventListener("input",()=>{const v=digitsOnly($("mobile").value);$("mobile").value=v.slice(-10);$("customerName").dataset.selectedCustomer="";$("customerMatchStatus").textContent="Searching saved customers by mobile number…";$("customerMatchStatus").className="small muted";if(v.length>=3)renderCustomerResults(v.slice(-10),"mobile");else $("customerResults").classList.add("hidden");if(v.length===10)fillCustomerDetails();});
+$("mobile").addEventListener("input",()=>{const v=digitsOnly($("mobile").value);$("mobile").value=v.slice(-10);$("customerName").dataset.selectedCustomer="";$("customerName").dataset.selectedLead="";$("customerMatchStatus").textContent="Searching Customer Master and CRM leads…";$("customerMatchStatus").className="small muted";if(v.length>=3)renderCustomerResults(v.slice(-10),"mobile");else $("customerResults").classList.add("hidden");if(v.length===10)fillCustomerDetails();});
 $("mobile").addEventListener("focus",()=>{const v=digitsOnly($("mobile").value);if(v.length>=3)renderCustomerResults(v.slice(-10),"mobile");});
 $("mobile").addEventListener("blur",fillCustomerDetails);
 $("gstin").addEventListener("blur",fillCustomerDetails);
@@ -5033,10 +5069,11 @@ $("mobile").addEventListener("input",()=>{
  if(digits.length<10){hidePosCustomerIntelligence();if($("customerMatchStatus")){$("customerMatchStatus").textContent="Enter a 10-digit mobile number to find customer history.";$("customerMatchStatus").className="small muted";}return;}
  posCustomerLookupTimer=setTimeout(async()=>{
    const match=customers.find(c=>customerPhoneNumbers(c).some(n=>n.slice(-10)===digits.slice(-10)));
-   if(match){
-     selectCustomer(match);
-   }else{
-     await loadPosCustomerIntelligence({displayName:$("customerName").value.trim(),mobile:digits},digits);
+   if(match){selectCustomer(match);}
+   else{
+     const lead=(crmLeads||[]).find(l=>l.status!=="Lost"&&customerPhoneNumbers(l).some(n=>n.slice(-10)===digits.slice(-10))&&(salesChannel==="b2b"?crmLeadChannel(l)==="b2b":crmLeadChannel(l)!=="b2b"));
+     if(lead)selectCrmLeadForPos(lead);
+     else await loadPosCustomerIntelligence({displayName:$("customerName").value.trim(),mobile:digits},digits);
    }
  },300);
 });
