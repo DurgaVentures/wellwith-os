@@ -1508,7 +1508,9 @@ input,select,textarea{min-width:0;max-width:100%}
    <div class="settings-card"><h3>Business invoice details</h3>
     <div class="field"><label>Legal business name</label><input id="bizName" value="DURGA VENTURES"></div>
     <div class="field" style="margin-top:9px"><label>GSTIN</label><input id="bizGstin" placeholder="Enter registered GSTIN"></div>
-    <div class="field" style="margin-top:9px"><label>Registered address</label><textarea id="bizAddress" rows="3" placeholder="Registered business address"></textarea></div>
+    <div class="field" style="margin-top:9px"><label>Registered address</label><textarea id="bizAddress" rows="3" placeholder="Shop / office address with PIN code"></textarea></div>
+    <div class="field" style="margin-top:9px"><label>Business phone</label><input id="bizPhone" type="tel" placeholder="Business contact number"></div>
+    <div class="field" style="margin-top:9px"><label>Business email</label><input id="bizEmail" type="email" placeholder="Business email address"></div>
     <div class="field" style="margin-top:9px"><label>State</label><input id="bizState" value="Karnataka"></div>
    </div>
    <div class="settings-card" style="grid-column:1/-1" id="thermalPrinterSettings">
@@ -3211,47 +3213,92 @@ function thermalReceiptWrap(value,width=32){
 function buildThermalReceipt(s){
  const enc=new TextEncoder(),parts=[];
  const add=t=>parts.push(enc.encode(String(t)));
- const esc=new Uint8Array([0x1b,0x40]);parts.push(esc);
- // Centered store heading.
- parts.push(new Uint8Array([0x1b,0x61,0x01,0x1b,0x45,0x01]));
- add("WELLWITH\n");
- parts.push(new Uint8Array([0x1b,0x45,0x00]));
- add("DURGA VENTURES\n");
- parts.push(new Uint8Array([0x1b,0x61,0x00]));
- const width=32;
- add("--------------------------------\n");
- add(thermalReceiptLine("Invoice",s.invoiceNo||"—",width)+"\n");
- add(thermalReceiptLine("Date",new Date(s.created||Date.now()).toLocaleString("en-IN"),width)+"\n");
- add("--------------------------------\n");
- for(const line of thermalReceiptWrap(s.customer||"Walk-in customer",width))add(line+"\n");
+ const cmd=(...bytes)=>parts.push(new Uint8Array(bytes));
+ // EC58B 58mm paper: use ESC/POS Font B for a wider 42-column receipt.
+ const width=42;
+ const rule=()=>add("------------------------------------------\n");
+ const center=(text)=>{cmd(0x1b,0x61,0x01);add(text+"\n");cmd(0x1b,0x61,0x00);};
+ const bold=(on)=>cmd(0x1b,0x45,on?0x01:0x00);
+ const line=(left,right)=>add(thermalReceiptLine(left,right,width)+"\n");
+ const fmt=v=>(Math.round((Number(v)||0)*100)/100).toFixed(2);
+ const storeName=String(settings?.bizName||"DURGA VENTURES").trim();
+ const storeAddress=String(settings?.bizAddress||"").trim();
+ const storeGstin=String(settings?.bizGstin||"").trim();
+ const storePhone=String(settings?.bizPhone||"").trim();
+ const storeEmail=String(settings?.bizEmail||"").trim();
+ const channel=String(s.channelLabel||({shop:"Shop",b2b:"B2B",online:"Online"}[s.salesChannel]||"Shop"));
+ const created=new Date(s.created||Date.now());
+ const dateText=Number.isNaN(created.getTime())?new Date().toLocaleString("en-IN"):created.toLocaleString("en-IN");
+ cmd(0x1b,0x40);
+ // Font B gives 42 printable columns on a standard 58mm / 384-dot printer.
+ cmd(0x1b,0x4d,0x01);
+ // Formal brand heading: centered, regular ESC/POS font with standard size and spacing.
+ center("WELLWITH");
+ center(storeName);
+ if(storeAddress)for(const l of thermalReceiptWrap(storeAddress,width))center(l);
+ if(storePhone)center("Ph: "+storePhone);
+ if(storeEmail)for(const l of thermalReceiptWrap(storeEmail,width))center(l);
+ if(storeGstin)center("GSTIN: "+storeGstin);
+ center("TAX RECEIPT");
+ cmd(0x1b,0x61,0x00);rule();
+ line("Invoice",s.invoiceNo||"—");line("Date",dateText);
+ rule();add("BILL TO\n");
+ for(const l of thermalReceiptWrap(s.customer||"Walk-in customer",width))add(l+"\n");
  if(s.mobile)add("Mobile: "+String(s.mobile)+"\n");
- add("--------------------------------\n");
- add("ITEM                 QTY    AMT\n");
- add("--------------------------------\n");
+ if(s.gstin)add("Customer GSTIN: "+String(s.gstin)+"\n");
+ rule();bold(true);add("ITEM DETAILS\n");bold(false);
  for(const item of (s.items||[])){
-  for(const nameLine of thermalReceiptWrap(item.name||"Item",width))add(nameLine+"\n");
-  const qty=String(Number(item.qty||0));
-  const amount=(Number(item.price||0)*Number(item.qty||0)).toFixed(2);
-  add(thermalReceiptLine(`${qty} x ${Number(item.price||0).toFixed(2)}`,amount,width)+"\n");
+  const name=String(item.name||"Item");
+  for(const l of thermalReceiptWrap(name,width))add(l+"\n");
+  const qty=Number(item.qty||0),rate=Number(item.price||0),amount=rate*qty;
+  line(`${qty} x ${fmt(rate)}`,fmt(amount));
+  if(item.hsn)add("HSN: "+String(item.hsn)+"\n");
+  if(item.gst!==null&&item.gst!==undefined)add("GST rate: "+fmt(item.gst)+"%\n");
+  if(item.batchNumber)add("Batch: "+String(item.batchNumber)+"\n");
+  if(item.manufacturingDate)add("Mfg: "+String(item.manufacturingDate)+"\n");
+  if(item.expiryDate)add("Exp: "+String(item.expiryDate)+"\n");
  }
- add("--------------------------------\n");
+ rule();
  let taxable=0,tax=0;
+ const isLocal=s.type==="retail"||String(s.supply||"29")==="29";
  for(const item of (s.items||[])){
   const gross=Number(item.price||0)*Number(item.qty||0);
   const rate=item.gst===null||item.gst===undefined?0:Number(item.gst);
   const base=item.gst===null||item.gst===undefined?gross:gross/(1+rate/100);
   taxable+=base;tax+=gross-base;
  }
- add(thermalReceiptLine("Taxable value",taxable.toFixed(2),width)+"\n");
- add(thermalReceiptLine("GST",tax.toFixed(2),width)+"\n");
- if(Number(s.discount||0)>0)add(thermalReceiptLine("Discount","-"+Number(s.discount).toFixed(2),width)+"\n");
- if(Number(s.deliveryCharge||0)>0)add(thermalReceiptLine("Delivery",Number(s.deliveryCharge).toFixed(2),width)+"\n");
- parts.push(new Uint8Array([0x1b,0x45,0x01]));
- add(thermalReceiptLine("GRAND TOTAL",Number(s.total||0).toFixed(2),width)+"\n");
- parts.push(new Uint8Array([0x1b,0x45,0x00]));
- add("Payment: "+String(s.onlinePaymentMode||s.payment||"—")+"\n");
- if(s.paymentReference)add("Ref: "+String(s.paymentReference)+"\n");
- add("\nThank you!\nVisit us again.\n\n\n");
+ const itemsGross=(s.items||[]).reduce((n,item)=>n+Number(item.price||0)*Number(item.qty||0),0);
+ const discount=Math.max(0,Number(s.discount||0));
+ const taxableAfter=Math.max(0,taxable-discount);
+ const taxAfter=taxable>0?tax*(taxableAfter/taxable):0;
+ const taxablePaise=Math.round(taxableAfter*100);
+ const taxPaise=Math.max(0,Math.round(taxAfter*100));
+ const cgstPaise=Math.floor(taxPaise/2),sgstPaise=taxPaise-cgstPaise;
+ const igstPaise=taxPaise;
+ if(itemsGross)line("Items subtotal",fmt(itemsGross));
+ line("Taxable value",fmt(taxablePaise/100));
+ if(isLocal&&taxPaise){line("CGST",fmt(cgstPaise/100));line("SGST",fmt(sgstPaise/100));}
+ else if(taxPaise)line("IGST",fmt(igstPaise/100));
+ if(!taxPaise)line("GST","0.00");
+ if(discount>0)line("Discount","-"+fmt(discount));
+ if(Number(s.deliveryCharge||0)>0)line("Delivery",fmt(s.deliveryCharge));
+ if(Number(s.packagingCost||0)>0)line("Packaging",fmt(s.packagingCost));
+ const grandPaise=Math.round(Number(s.total||0)*100);
+ rule();bold(true);line("GRAND TOTAL","Rs "+fmt(grandPaise/100));bold(false);
+ rule();
+ const payment=String(s.payment||s.onlinePaymentMode||"—");line("Payment",payment);
+ if(payment==="Split payment"){
+  if(Number(s.splitUpi||0)>0)line("UPI",fmt(s.splitUpi));
+  if(Number(s.splitCash||0)>0)line("Cash",fmt(s.splitCash));
+ }
+ if(s.paymentReference)for(const l of thermalReceiptWrap("Ref: "+s.paymentReference,width))add(l+"\n");
+ if(s.cashTendered>0){line("Cash received",fmt(s.cashTendered));if(s.changeDue>0)line("Change",fmt(s.changeDue));}
+ const paid=Number(s.paidAmount??((payment==="Credit"||payment==="COD")?0:(payment==="Partial payment"?Number(s.partialPaidAmount||0):grandPaise/100)));
+ const balance=Math.max(0,grandPaise/100-paid);
+ if(payment==="Credit"||balance>0.005){line("Paid",fmt(paid));line("Balance due",fmt(balance));}
+ rule();add("\n");center("Thank you for shopping with us!");center("WELLWITH · DURGA VENTURES");
+ center("Computer-generated tax receipt");
+ add("\n\n");
  const length=parts.reduce((n,p)=>n+p.length,0),all=new Uint8Array(length);let offset=0;
  for(const part of parts){all.set(part,offset);offset+=part.length;}
  return all;
@@ -4055,7 +4102,17 @@ async function savePaymentCollection(){
  }catch(e){console.error('Payment collection failed',e);$('paymentCollectError').textContent=e?.message||'Could not save the payment collection.';}
  finally{btn.disabled=false;btn.textContent='Save collection';}
 }
-function printRecordedSale(s){if(!s)return;$('receipt').innerHTML=buildInvoice(s);window.print();}
+async function printRecordedSale(s){
+ if(!s)return;
+ try{
+  if(!wellwithThermalPort?.writable)throw new Error("Thermal printer is not connected. Reconnect the Everycom EC58B in POS Settings, then try printing again.");
+  await thermalPrinterPrintSale(s);
+  toast(`Tax receipt ${s.invoiceNo||""} sent to the thermal printer.`);
+ }catch(e){
+  console.error("Sales Register thermal print failed",e);
+  toast(e?.message||"Could not print this receipt. Check the thermal printer connection.");
+ }
+}
 
 // Controlled full invoice editor. Only authorised Super Admins can post corrections.
 let invoiceEditId=null;
@@ -4333,7 +4390,7 @@ async function lookupGSTIN(){
  toast("GSTIN format validated. Live lookup is not connected yet.");
 }
 function open(id){$(id).classList.remove("hidden")}function close(id){$(id).classList.add("hidden")}
-function fillSettings(){ $("bizName").value=settings.bizName||"DURGA VENTURES";$("bizGstin").value=settings.bizGstin||"";$("bizAddress").value=settings.bizAddress||"";$("bizState").value=settings.bizState||"Karnataka";
+function fillSettings(){ $("bizName").value=settings.bizName||"DURGA VENTURES";$("bizGstin").value=settings.bizGstin||"";$("bizAddress").value=settings.bizAddress||"";$("bizPhone").value=settings.bizPhone||"";$("bizEmail").value=settings.bizEmail||"";$("bizState").value=settings.bizState||"Karnataka";
  $("shopPrefix").value=settings.shopPrefix||settings.prefix||"INV-";
  $("b2bPrefix").value=settings.b2bPrefix||"B2B-";
  $("onlinePrefix").value=settings.onlinePrefix||"ONL-";
@@ -4341,7 +4398,7 @@ function fillSettings(){ $("bizName").value=settings.bizName||"DURGA VENTURES";$
  $("b2bNextNumber").value=settings.b2bNextNumber||1;
  $("onlineNextNumber").value=settings.onlineNextNumber||1;
  $("productSettings").innerHTML=products.filter(p=>p.active!==false).map((p,i)=>`<tr><td>${p.name}</td><td>${p.sku}</td><td><input type="number" min="0" step=".01" data-price="${i}" value="${p.price??""}" placeholder="Required"></td><td><input data-hsn="${i}" value="${p.hsn||""}" placeholder="HSN"></td><td><input type="number" min="0" max="100" step=".01" data-gst="${i}" value="${p.gst??""}" placeholder="%"></td></tr>`).join("")}
-function saveSettings(){const prefixes=[ ["Shop",$("shopPrefix").value.trim()], ["B2B",$("b2bPrefix").value.trim()], ["Online",$("onlinePrefix").value.trim()] ];const empty=prefixes.find(x=>!x[1]);if(empty){toast(empty[0]+" invoice prefix cannot be blank.");return}settings={...settings,bizName:$("bizName").value.trim(),bizGstin:$("bizGstin").value.trim().toUpperCase(),bizAddress:$("bizAddress").value.trim(),bizState:$("bizState").value.trim(),
+function saveSettings(){const prefixes=[ ["Shop",$("shopPrefix").value.trim()], ["B2B",$("b2bPrefix").value.trim()], ["Online",$("onlinePrefix").value.trim()] ];const empty=prefixes.find(x=>!x[1]);if(empty){toast(empty[0]+" invoice prefix cannot be blank.");return}settings={...settings,bizName:$("bizName").value.trim(),bizGstin:$("bizGstin").value.trim().toUpperCase(),bizAddress:$("bizAddress").value.trim(),bizPhone:$("bizPhone").value.trim(),bizEmail:$("bizEmail").value.trim(),bizState:$("bizState").value.trim(),
  shopPrefix:$("shopPrefix").value.trim(),b2bPrefix:$("b2bPrefix").value.trim(),onlinePrefix:$("onlinePrefix").value.trim(),
  shopNextNumber:Math.max(1,Number($("shopNextNumber").value)||1),b2bNextNumber:Math.max(1,Number($("b2bNextNumber").value)||1),onlineNextNumber:Math.max(1,Number($("onlineNextNumber").value)||1)};$("productSettings").querySelectorAll("[data-price]").forEach(e=>products[+e.dataset.price].price=e.value===""?null:Number(e.value));$("productSettings").querySelectorAll("[data-hsn]").forEach(e=>products[+e.dataset.hsn].hsn=e.value.trim());$("productSettings").querySelectorAll("[data-gst]").forEach(e=>products[+e.dataset.gst].gst=e.value===""?null:Number(e.value));persist();renderProducts();renderCart();renderNextInvoicePreview(salesChannel);close("settingsModal");toast("POS settings saved and queued for cloud sync")}
 
