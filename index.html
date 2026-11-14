@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Wellwith OS · Business Workspace · v8.50.0</title>
+<title>Wellwith OS · Business Workspace · v9.08.0</title>
 <style>
 :root{--green:#174b37;--green2:#23664b;--cream:#f6f4ec;--paper:#fff;--ink:#202923;--muted:#738078;--line:#e4e9e4;--soft:#edf4ef;--red:#a33b32;--amber:#8a5a13;--shadow:0 8px 28px rgba(20,50,35,.07)}
 *{box-sizing:border-box}body{margin:0;background:#f4f6f3;color:var(--ink);font:14px/1.45 Inter,Segoe UI,Arial,sans-serif}
@@ -391,6 +391,95 @@ input,select,textarea,button{max-width:100%;font:inherit}
  #crmLeadModal .crm-lead-form-main .fields{grid-template-columns:1fr}
  #crmLeadModal .crm-lead-form-main .crm-wide{grid-column:1}
 }
+
+/* v8.85.0 POS scroll usability: keep the bill panel as a real, independently scrollable flex region. */
+@media (min-width:1051px){
+  #posView>.layout{min-height:0;align-items:stretch}
+  #posView>.layout>.panel{height:100%;min-height:0;overflow:hidden}
+  #posView>.layout>.panel:last-child{display:flex;flex-direction:column;min-height:0}
+  #posView>.layout>.panel:last-child>.panel-head{flex:0 0 auto}
+  #posView>.layout>.panel:last-child>.panel-body{flex:1 1 0%;height:0;min-height:0;max-height:none;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;padding-bottom:24px}
+  #posView .layout>.panel:last-child .panel-body>*{min-width:0}
+  #posView #paymentReferenceWrap{scroll-margin-bottom:24px}
+  #posView .footer-actions{padding-bottom:8px}
+}
+@media (max-width:1050px){
+  body:has(#posView:not(.hidden)){overflow-y:auto}
+  .content:has(#posView:not(.hidden)){height:auto;max-height:none;overflow:visible}
+  #posView{height:auto;min-height:0}
+  #posView>.layout{height:auto;min-height:0}
+  #posView .layout>.panel{height:auto;min-height:0}
+  #posView .layout>.panel:last-child .panel-body{height:auto;max-height:none;overflow:visible}
+}
+
+
+/* v9.01.0 POS bill scrolling: keep all bill controls inside the single scroll container. */
+@media (min-width:1051px){
+  #posView{min-height:0!important;overflow:hidden!important}
+  #posView>.layout{min-height:0!important;overflow:hidden!important;align-items:stretch!important}
+  #posView>.layout>.panel:last-child{
+    display:flex!important;flex-direction:column!important;
+    height:100%!important;min-height:0!important;max-height:100%!important;
+    overflow:hidden!important;
+  }
+  #posView>.layout>.panel:last-child>.panel-head{flex:0 0 auto!important}
+  #posView>.layout>.panel:last-child>.panel-body{
+    display:block!important;flex:1 1 auto!important;
+    height:auto!important;min-height:0!important;max-height:none!important;
+    overflow-x:hidden!important;overflow-y:auto!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    scrollbar-gutter:stable!important;padding-bottom:28px!important;
+  }
+  #posView>.layout>.panel:last-child>.panel-body>*{flex-shrink:0}
+  #posView #paymentReferenceWrap,#posView #summary,#posView #taxNotice,#posView .footer-actions{position:static!important}
+}
+@media (max-width:1050px){
+  #posView>.layout>.panel:last-child>.panel-body{height:auto!important;max-height:none!important;overflow:visible!important}
+}
+
+
+/* v9.04.0: compact POS workspace header; keep controls with the bill actions. */
+#posView>.toolbar{display:none!important}
+#posView>.pos-header-stats[hidden]{display:none!important}
+#posView .pos-bill-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#posView .pos-bill-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+#posView .pos-bill-head-actions .btn{min-height:34px;padding:7px 9px;font-size:11px;white-space:nowrap}
+@media(max-width:760px){#posView .pos-bill-head{align-items:flex-start}#posView .pos-bill-head-actions{width:100%;justify-content:flex-start}#posView .pos-bill-head-actions .btn{flex:1 1 auto}}
+
+/* v9.02.0 POS workspace: independent bill-details scroll with a persistent checkout summary. */
+@media (min-width:1051px){
+  #posView>.layout{grid-template-columns:minmax(0,1.04fr) minmax(440px,.96fr)!important;gap:14px!important;align-items:stretch!important}
+  #posView>.layout>.panel:last-child{display:flex!important;flex-direction:column!important;min-height:0!important;height:100%!important;overflow:hidden!important}
+  #posView>.layout>.panel:last-child>.panel-head{flex:0 0 auto!important;padding:12px 15px!important;background:#fff!important;z-index:3}
+  #posView>.layout>.panel:last-child>.panel-body.pos-bill-body,
+  #posView>.layout>.panel:last-child>.panel-body:has(>.pos-bill-details){
+    display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+    min-height:0!important;height:0!important;max-height:none!important;
+    padding:0!important;overflow:hidden!important;background:#fff!important;
+  }
+  #posView .pos-bill-details{flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding:12px 15px 16px!important}
+  #posView .pos-bill-checkout{flex:0 0 auto!important;position:relative!important;z-index:4;background:#fff!important;border-top:1px solid var(--line)!important;box-shadow:0 -5px 14px rgba(20,50,35,.045);padding:9px 15px 11px!important}
+  #posView .pos-bill-checkout .summary{margin:0 0 7px!important;padding:0!important;border:0!important;gap:3px!important}
+  #posView .pos-bill-checkout .sumrow{font-size:11px!important}
+  #posView .pos-bill-checkout .sumrow.total{font-size:18px!important;padding-top:5px!important;margin-top:3px!important;border-top:1px dashed var(--line)!important}
+  #posView .pos-bill-checkout .note{margin:5px 0 7px!important;padding:6px 8px!important;font-size:10px!important}
+  #posView .pos-bill-checkout .footer-actions{display:grid!important;grid-template-columns:1fr 1fr 1.12fr!important;gap:7px!important;margin:7px 0 0!important}
+  #posView .pos-bill-checkout .footer-actions .btn{min-width:0!important;padding:9px 7px!important;white-space:nowrap}
+  #posView .pos-bill-checkout>.small{display:none!important}
+  #posView .pos-bill-details #cartArea{max-height:150px;overflow:auto}
+}
+@media (max-width:1050px){
+  #posView>.layout>.panel:last-child>.panel-body:has(>.pos-bill-details){display:block!important;height:auto!important;min-height:0!important;overflow:visible!important;padding:12px!important}
+  #posView .pos-bill-details{overflow:visible!important;max-height:none!important;padding:0!important}
+  #posView .pos-bill-checkout{position:static!important;border-top:1px solid var(--line)!important;box-shadow:none!important;padding:12px 0 0!important;margin-top:12px!important;background:#fff!important}
+  #posView .pos-bill-checkout .footer-actions{display:grid!important;grid-template-columns:1fr 1fr 1.1fr!important;gap:6px!important}
+}
+@media(max-width:520px){
+  #posView .pos-bill-checkout .footer-actions{grid-template-columns:1fr!important}
+  #posView .pos-bill-checkout .footer-actions .btn{width:100%}
+}
+
 </style>
 <style>
 #saleSourceChoices.source-choice-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
@@ -497,6 +586,321 @@ input,select,textarea,button{max-width:100%;font:inherit}
  #dashboardView .inv-kpi strong{font-size:17px}
 }
 </style>
+
+<style id="wellwith-responsive-display-v895">
+/* v8.95.0 — adaptive layout for laptop, QHD/4K and external monitors */
+:root{--app-sidebar-width:clamp(208px,12.2vw,276px);--page-gutter:clamp(14px,1.65vw,38px);--panel-gap:clamp(10px,.9vw,18px)}
+html{width:100%;min-width:320px;min-height:100%;scroll-behavior:smooth}
+body{width:100%;min-width:320px;min-height:100vh;overflow-x:hidden}
+.app{width:100%;min-height:100vh;grid-template-columns:var(--app-sidebar-width) minmax(0,1fr)}
+.sidebar{min-width:0;max-height:100vh;overflow-y:auto;position:sticky;top:0;align-self:start;height:100vh}
+main{width:100%;min-width:0;max-width:none}
+.topbar{width:100%;min-width:0;padding-inline:var(--page-gutter);gap:14px}
+.topbar>*{min-width:0}
+.topbar .user{min-width:0;overflow-wrap:anywhere}
+.content{width:100%;max-width:2400px;margin-inline:auto;padding:clamp(16px,1.45vw,34px) var(--page-gutter) clamp(24px,2vw,48px)}
+/* Prevent grid and flex children from forcing horizontal page overflow. */
+.layout,.returns-layout,.settings-grid,.fields,.fields.three,.fields.four,.dashboard-grid,.module-tiles,.inv-kpis,.crm-analytics-grid{min-width:0}
+.layout{grid-template-columns:minmax(0,1.45fr) minmax(0,.85fr);gap:var(--panel-gap)}
+.layout>* , .panel,.panel-body,.settings-card,.field,.toolbar,.toolbar-actions{min-width:0}
+.toolbar{flex-wrap:wrap}
+.toolbar-actions{flex-wrap:wrap;min-width:0}
+.toolbar-actions>*{min-width:0}
+.products{grid-template-columns:repeat(auto-fill,minmax(min(100%,155px),1fr));min-width:0}
+.product{min-width:0;overflow-wrap:anywhere}
+.table-wrap,.table-responsive,.inv-table-wrap{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+table{max-width:100%}
+img,video,canvas,svg{height:auto;max-width:100%}
+input,select,textarea{min-width:0;max-width:100%}
+/* POS uses two independently sized work areas on desktop; bill remains scrollable. */
+@media (min-width:1051px){
+ body:has(#posView:not(.hidden)){overflow:hidden}
+ .content:has(#posView:not(.hidden)){width:100%;max-width:none;padding:clamp(10px,1vw,20px) var(--page-gutter);height:calc(100dvh - 68px);min-height:0;overflow:hidden}
+ #posView{width:100%;height:100%;min-height:0;display:flex;flex-direction:column}
+ #posView>.toolbar{flex:0 0 auto;min-width:0;gap:10px}
+ #posView>.layout{width:100%;flex:1 1 auto;min-height:0;height:auto;grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);gap:var(--panel-gap);align-items:stretch}
+ #posView .layout>.panel{min-width:0;min-height:0;max-height:100%;display:flex;flex-direction:column}
+ #posView .layout>.panel>.panel-body{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}
+ #posView .layout>.panel:first-child>.panel-body{display:flex;flex-direction:column;overflow:hidden}
+ #posView .products{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));min-width:0;min-height:0;flex:1 1 auto;overflow:auto;align-content:start}
+ #posView .layout>.panel:last-child>.panel-body{overflow-y:auto;overflow-x:hidden}
+ #posView .cart-table{width:100%;table-layout:auto}
+}
+/* Standard laptop and smaller desktop widths. */
+@media (min-width:901px) and (max-width:1366px){
+ :root{--app-sidebar-width:205px;--page-gutter:16px;--panel-gap:10px}
+ .content{padding-top:16px}
+ .layout{grid-template-columns:minmax(0,1.15fr) minmax(0,.95fr)}
+ #posView>.layout{grid-template-columns:minmax(0,1fr) minmax(390px,1fr)}
+ .panel-head{padding:12px 14px}
+ .panel-body{padding:13px 14px}
+}
+/* 27-inch Full HD / QHD / 4K displays: use the available canvas, not a narrow 1600px column. */
+@media (min-width:1600px){
+ :root{--app-sidebar-width:clamp(238px,11vw,290px);--page-gutter:clamp(28px,1.8vw,48px);--panel-gap:clamp(16px,1vw,24px)}
+ .content{max-width:2400px}
+ .topbar{min-height:72px;height:72px}
+ .content:has(#posView:not(.hidden)){height:calc(100dvh - 72px)}
+ .content:not(:has(#posView:not(.hidden))){padding-top:clamp(26px,1.8vw,42px)}
+ .panel-head{padding:clamp(16px,.9vw,22px) clamp(18px,1vw,26px)}
+ .panel-body{padding:clamp(16px,.95vw,24px)}
+ .btn{padding:10px 15px}
+ .dashboard-grid,.module-tiles,.inv-kpis,.crm-analytics-grid{gap:clamp(14px,.9vw,22px)}
+ #posView>.layout{grid-template-columns:minmax(0,1.12fr) minmax(500px,.88fr)}
+ #posView .products{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
+ #posView .product{min-height:120px;padding:13px}
+ #posView .product b{font-size:14px}
+}
+@media (min-width:2400px){
+ :root{--app-sidebar-width:290px;--page-gutter:44px}
+ body{font-size:15px}
+ .topbar h1{font-size:20px}
+ .content{max-width:2600px}
+}
+/* Tablet / narrow windows: stack working panels instead of squeezing controls. */
+@media (min-width:701px) and (max-width:900px){
+ .app{grid-template-columns:176px minmax(0,1fr)}
+ .sidebar{padding:16px 10px}
+ .content{padding:16px}
+ .layout,.returns-layout{grid-template-columns:minmax(0,1fr)}
+ .settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #posView>.layout{grid-template-columns:minmax(0,1fr)}
+ #posView .layout>.panel{max-height:none}
+}
+/* Mobile retains the existing drawer navigation and bottom navigation. */
+@media(max-width:700px){
+ .app{width:100%;display:block}
+ .sidebar{position:fixed;height:100dvh;max-height:100dvh}
+ main,.content{width:100%;max-width:none}
+ .layout,.returns-layout,.settings-grid{grid-template-columns:minmax(0,1fr)}
+ .products{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #posView>.layout{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+
+
+<style id="wellwith-clean-dashboard-v896">
+/* v8.96.0 — clean, restrained dashboard presentation; dashboard data/actions unchanged */
+#dashboardView{max-width:1680px;margin:0 auto;padding-bottom:28px}
+#dashboardView>.toolbar{margin:4px 0 20px;align-items:flex-end}
+#dashboardView>.toolbar h2{font-size:25px!important;font-weight:700;letter-spacing:-.45px;color:#17251e}
+#dashboardView>.toolbar p{font-size:13px;color:#78857d;margin:5px 0 0}
+#dashboardView>.panel{background:transparent;border:0;box-shadow:none;margin:0}
+#dashboardView>.panel>.panel-body{padding:0;}
+#dashboardView .toolbar{gap:16px}
+#dashboardView .toolbar-actions{display:flex;align-items:center;gap:9px}
+#dashboardView .toolbar-actions .btn,#dashboardView .toolbar-actions button{min-height:38px;padding:8px 13px!important;font-size:12px!important;border-radius:8px}
+#dashboardView #dashSalesDate{height:38px;max-width:170px;padding:7px 10px!important;font-size:12px!important;border:1px solid #dce4de;border-radius:8px;background:#fff}
+#dashboardView .dashboard-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 16px!important}
+#dashboardView .inv-kpi{background:#fff;border:1px solid #e3e9e4;border-radius:12px;padding:16px 17px;min-height:112px;box-shadow:0 2px 7px rgba(24,55,38,.025)}
+#dashboardView .inv-kpi span{display:block;font-size:12px;color:#748178;margin-bottom:9px}
+#dashboardView .inv-kpi strong{display:block;font-size:25px;line-height:1.2;font-weight:700;letter-spacing:-.45px;color:#17251e}
+#dashboardView .inv-kpi .small{font-size:11px;color:#89948d;margin-top:6px}
+#dashboardView .settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0 0 14px!important}
+#dashboardView .settings-card{background:#fff;border:1px solid #e3e9e4;border-radius:12px;padding:16px 17px;box-shadow:0 2px 7px rgba(24,55,38,.025);min-width:0}
+#dashboardView .settings-card h3{font-size:13px;font-weight:650;color:#24352b;margin:0 0 12px}
+#dashboardView .settings-card .small,#dashboardView .settings-card div{font-size:12px;line-height:1.55}
+#dashboardView #dashChannelBreakdown,#dashboardView #dashPaymentBreakdown{min-height:42px}
+#dashboardView #dashTopProducts{margin-bottom:14px!important}
+#dashboardView .fields.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 24px!important}
+#dashboardView .fields.three .settings-card{padding:13px 16px}
+#dashboardView .fields.three .small{font-size:11px;color:#7d8981}
+#dashboardView .fields.three strong{font-size:17px!important;display:block;margin-top:3px;color:#1b3024}
+#dashboardView .dash-section-heading{display:flex;align-items:baseline;justify-content:space-between;margin:4px 0 12px}
+#dashboardView .dash-section-heading h3{font-size:16px;font-weight:700;margin:0;color:#1c2d23}
+#dashboardView .dash-section-heading span{font-size:11px;color:#87928b}
+#dashboardView #dashboardModules,#dashboardView .products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#dashboardView .module-tile{min-height:88px;padding:15px 16px;border:1px solid #e1e8e2;border-radius:11px;background:#fff;display:flex;flex-direction:column;justify-content:center;gap:5px;box-shadow:0 2px 7px rgba(24,55,38,.025);transition:border-color .15s,box-shadow .15s,transform .15s}
+#dashboardView .module-tile strong{font-size:13px;line-height:1.35;font-weight:650;color:#1d3829}
+#dashboardView .module-tile span{font-size:11px;line-height:1.4;color:#7b8880}
+#dashboardView .module-tile em{font-size:10px;font-style:normal;color:#9a6a2d;margin-top:2px}
+#dashboardView .module-tile:hover{border-color:#9db9a7;box-shadow:0 5px 15px rgba(24,55,38,.07);transform:translateY(-1px)}
+@media(max-width:1050px){#dashboardView .dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboardView #dashboardModules,#dashboardView .products{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){#dashboardView>.toolbar{align-items:flex-start}#dashboardView .settings-grid{grid-template-columns:1fr}#dashboardView .fields.three{grid-template-columns:1fr 1fr}#dashboardView .toolbar-actions{width:100%;flex-wrap:wrap}#dashboardView #dashSalesDate{flex:1;min-width:140px}}
+@media(max-width:420px){#dashboardView .dashboard-grid{gap:9px}#dashboardView .inv-kpi{padding:12px;min-height:96px}#dashboardView .inv-kpi strong{font-size:20px}#dashboardView #dashboardModules,#dashboardView .products{grid-template-columns:1fr 1fr}#dashboardView .fields.three{grid-template-columns:1fr}}
+</style>
+
+
+<style id="wellwith-pos-visual-redesign-v903">
+/* v9.03 POS visual redesign: layout-only; preserve existing IDs and handlers */
+@media (min-width: 1001px){
+  #posView .layout{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.08fr) minmax(440px,.92fr)!important;
+    gap:16px!important;align-items:stretch!important;
+    height:calc(100dvh - 260px)!important;min-height:480px!important;
+    max-height:calc(100dvh - 230px)!important;
+  }
+  #posView .layout>.panel{
+    min-width:0!important;min-height:0!important;height:100%!important;
+    display:flex!important;flex-direction:column!important;
+    border:1px solid #dce6df!important;border-radius:14px!important;
+    box-shadow:0 3px 14px rgba(24,55,38,.055)!important;overflow:hidden!important;
+  }
+  #posView .layout>.panel>.panel-head{
+    flex:0 0 auto!important;min-height:54px!important;padding:12px 16px!important;
+    background:#fbfcfb!important;border-bottom:1px solid #e5ece7!important;
+  }
+  #posView .layout>.panel:first-child>.panel-body{
+    display:flex!important;flex-direction:column!important;flex:1 1 auto!important;
+    min-height:0!important;overflow:hidden!important;padding:14px!important;
+  }
+  #posView .layout>.panel:first-child .searchrow{
+    display:grid!important;grid-template-columns:minmax(190px,1.15fr) auto minmax(160px,1fr) 145px!important;
+    gap:8px!important;align-items:center!important;margin:0 0 10px!important;
+  }
+  #posView #posBarcodeInput,#posView #search,#posView #category{width:100%!important;min-width:0!important;height:42px!important;margin:0!important}
+  #posView #posCameraScan{height:42px!important;white-space:nowrap!important;padding:0 12px!important}
+  #posView .layout>.panel:first-child .small.muted{line-height:1.5!important;font-size:11px!important;margin:2px 0 10px!important}
+  #posView .layout>.panel:first-child .products{
+    display:grid!important;grid-template-columns:repeat(auto-fill,minmax(155px,1fr))!important;
+    gap:12px!important;align-content:start!important;align-items:start!important;
+    flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;
+    padding:2px 4px 8px 2px!important;
+  }
+  #posView .layout>.panel:last-child>.panel-body{
+    display:flex!important;flex-direction:column!important;flex:1 1 auto!important;
+    min-height:0!important;height:auto!important;overflow:hidden!important;padding:0!important;
+  }
+  #posView .pos-bill-details{
+    display:block!important;flex:1 1 0!important;min-height:0!important;height:0!important;
+    max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;
+    overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;
+    padding:14px 16px 18px!important;scrollbar-width:thin!important;
+  }
+  #posView .pos-bill-details #cartArea{max-height:none!important;overflow:visible!important;margin-bottom:14px!important}
+  #posView .pos-bill-details .section-title{margin-top:14px!important;margin-bottom:7px!important;font-size:12px!important;letter-spacing:.01em!important;color:#234c38!important}
+  #posView .pos-bill-details .fields{gap:10px!important}
+  #posView .pos-bill-details .field label{font-size:11px!important;font-weight:650!important;color:#52645a!important}
+  #posView .pos-bill-details input:not([type=checkbox]),#posView .pos-bill-details select,#posView .pos-bill-details textarea{min-height:40px!important;border-radius:8px!important}
+  #posView .pos-bill-details .choice-btn{min-height:58px!important;border-radius:9px!important;padding:9px 10px!important}
+  #posView .pos-bill-checkout{
+    flex:0 0 auto!important;position:relative!important;z-index:5!important;
+    background:#fff!important;border-top:1px solid #dfe8e2!important;
+    box-shadow:0 -5px 16px rgba(20,50,35,.055)!important;
+    padding:10px 16px 12px!important;margin:0!important;
+  }
+  #posView .pos-bill-checkout .summary{margin:0 0 8px!important}
+  #posView .pos-bill-checkout .footer-actions{display:grid!important;grid-template-columns:1fr 1fr 1.15fr!important;gap:8px!important;margin-top:9px!important}
+  #posView .pos-bill-checkout .footer-actions button{min-height:42px!important;border-radius:9px!important;font-weight:700!important}
+  #posView .pos-bill-checkout .small.muted{font-size:10px!important;line-height:1.4!important;margin-top:7px!important}
+}
+@media (min-width:1001px) and (max-width:1180px){
+  #posView .layout{grid-template-columns:minmax(0,1fr) minmax(410px,.98fr)!important}
+  #posView .layout>.panel:first-child .searchrow{grid-template-columns:minmax(160px,1fr) auto!important}
+  #posView #search{grid-column:1!important}
+  #posView #category{grid-column:2!important}
+}
+@media (max-width:1000px){
+  #posView .layout{height:auto!important;max-height:none!important;min-height:0!important;gap:12px!important}
+  #posView .layout>.panel{height:auto!important;min-height:0!important}
+  #posView .layout>.panel:first-child>.panel-body{overflow:visible!important}
+  #posView .layout>.panel:last-child>.panel-body{display:block!important;height:auto!important;overflow:visible!important}
+  #posView .pos-bill-details{height:auto!important;min-height:0!important;overflow:visible!important;padding:12px!important}
+  #posView .pos-bill-checkout{position:static!important;box-shadow:none!important}
+  #posView .layout>.panel:first-child .searchrow{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}
+  #posView #posBarcodeInput,#posView #search{grid-column:1!important}
+  #posView #posCameraScan{grid-column:2!important;grid-row:1!important}
+  #posView #category{grid-column:2!important;grid-row:2!important}
+}
+@media (max-width:620px){
+  #posView .layout>.panel:first-child .searchrow{grid-template-columns:minmax(0,1fr)!important}
+  #posView #posBarcodeInput,#posView #search,#posView #category,#posView #posCameraScan{grid-column:1!important;grid-row:auto!important}
+  #posView .pos-bill-checkout .footer-actions{grid-template-columns:1fr!important}
+}
+</style>
+
+<style id="v9-07-pos-viewport-height-hard-fix">
+/* v9.07.0: Size the POS panels directly against the visible browser viewport.
+   Earlier percentage/flex sizing inherited a shorter parent height. */
+@media (min-width:1051px) and (min-height:600px){
+  .content:has(>#posView:not(.hidden)){
+    height:auto!important; min-height:0!important; max-height:none!important;
+    overflow:visible!important; display:block!important;
+  }
+  #posView{
+    display:block!important; height:auto!important; min-height:0!important;
+    max-height:none!important; overflow:visible!important;
+  }
+  #posView>.layout{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,.94fr)!important;
+    align-items:stretch!important;
+    height:calc(100dvh - 144px)!important;
+    min-height:480px!important; max-height:none!important;
+    flex:none!important;
+  }
+  #posView>.layout>.panel{
+    display:flex!important; flex-direction:column!important;
+    height:100%!important; min-height:0!important; max-height:none!important;
+    overflow:hidden!important;
+  }
+  #posView>.layout>.panel>.panel-head{flex:0 0 auto!important}
+  #posView>.layout>.panel:first-child>.panel-body{
+    flex:1 1 auto!important; height:0!important; min-height:0!important;
+    overflow-y:auto!important; overflow-x:hidden!important;
+  }
+  #posView>.layout>.panel:last-child>.panel-body{
+    flex:1 1 auto!important; height:0!important; min-height:0!important;
+    overflow-y:auto!important; overflow-x:hidden!important;
+  }
+}
+@media (max-width:1050px),(max-height:599px){
+  #posView>.layout{height:auto!important;min-height:0!important;max-height:none!important}
+  #posView>.layout>.panel{height:auto!important;min-height:0!important;overflow:visible!important}
+  #posView>.layout>.panel>.panel-body{height:auto!important;overflow:visible!important}
+}
+</style>
+
+<style id="pos-v9-08-viewport-layout">
+/* v9.08.0: constrain the application shell, then let POS consume the real
+   remaining height below the fixed topbar. Earlier versions sized the POS
+   child without giving its app/main ancestors a definite height. */
+@media (min-width:1051px) and (min-height:600px){
+  body:has(#posView:not(.hidden)) {height:100dvh;min-height:0;overflow:hidden}
+  body:has(#posView:not(.hidden)) .app {height:100dvh;min-height:0;overflow:hidden}
+  body:has(#posView:not(.hidden)) .sidebar {height:100dvh;min-height:0;overflow-y:auto}
+  body:has(#posView:not(.hidden)) main {height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+  body:has(#posView:not(.hidden)) .topbar {flex:0 0 68px;height:68px;min-height:68px}
+  body:has(#posView:not(.hidden)) .content:has(>#posView:not(.hidden)) {
+    flex:1 1 auto;width:100%;max-width:none;height:auto;min-height:0;max-height:none;
+    margin:0;padding:12px 16px 14px;overflow:hidden;display:flex;flex-direction:column;
+  }
+  #posView:not(.hidden) {display:flex;flex:1 1 auto;flex-direction:column;width:100%;height:auto;min-height:0;max-height:none;overflow:hidden}
+  #posView:not(.hidden) > .layout {
+    display:grid;flex:1 1 auto;width:100%;height:auto;min-height:0;max-height:none;
+    grid-template-columns:minmax(0,1fr) minmax(0,.94fr);gap:14px;align-items:stretch;
+  }
+  #posView:not(.hidden) > .layout > .panel {display:flex;flex-direction:column;height:100%;min-height:0;max-height:none;overflow:hidden}
+  #posView:not(.hidden) > .layout > .panel > .panel-head {flex:0 0 auto}
+  #posView:not(.hidden) > .layout > .panel:first-child > .panel-body {
+    display:flex;flex:1 1 auto;flex-direction:column;height:0;min-height:0;max-height:none;
+    overflow-y:auto;overflow-x:hidden;
+  }
+  #posView:not(.hidden) > .layout > .panel:last-child > .panel-body {
+    display:flex;flex:1 1 auto;flex-direction:column;height:0;min-height:0;max-height:none;
+    padding:0;overflow:hidden;
+  }
+  #posView .pos-bill-details {flex:1 1 auto;height:0;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden}
+  #posView .pos-bill-checkout {flex:0 0 auto;position:relative;z-index:4;background:#fff}
+}
+@media (max-width:1050px), (max-height:599px){
+  body:has(#posView:not(.hidden)),body:has(#posView:not(.hidden)) .app,
+  body:has(#posView:not(.hidden)) main {height:auto;min-height:100%;overflow:visible}
+  body:has(#posView:not(.hidden)) .content:has(>#posView:not(.hidden)) {height:auto;min-height:0;overflow:visible;display:block}
+  #posView:not(.hidden),#posView:not(.hidden) > .layout {display:block;height:auto;min-height:0;max-height:none;overflow:visible}
+  #posView:not(.hidden) > .layout > .panel {height:auto;min-height:0;overflow:visible}
+  #posView:not(.hidden) > .layout > .panel > .panel-body {height:auto;min-height:0;overflow:visible}
+  #posView .pos-bill-details {height:auto;min-height:0;overflow:visible}
+}
+</style>
+
+<style id="v9-09-pos-module-visibility-fix">
+/* v9.09.0: keep POS viewport flex layout from overriding the app's hidden module state. */
+#posView.hidden, .content #posView.hidden { display: none !important; }
+#posView:not(.hidden) { display: flex; }
+</style>
 </head>
 <body>
 <div id="environmentBanner" style="display:none;background:#8b1e1e;color:#fff;padding:10px 16px;font-weight:700;text-align:center;position:sticky;top:0;z-index:9999">FIREBASE EMULATOR — TEST DATA ONLY — NOT PRODUCTION</div>
@@ -563,19 +967,19 @@ input,select,textarea,button{max-width:100%;font:inherit}
  <header class="topbar"><div><div class="crumb">Wellwith OS / Sales</div><h1>POS & Billing</h1></div><div class="user"><span id="signedInEmail">Not signed in</span><span id="cloudStatus" class="cloud-indicator">● Connecting</span> &nbsp; <button class="btn" id="logoutBtn" style="padding:6px 9px;margin-left:8px">Sign out</button></div></header>
  <div class="content">
   <section id="dashboardView">
-   <div class="toolbar"><div><h2 style="margin:0;font-size:20px">Business Dashboard</h2><p>Wellwith OS workspace overview and module launchpad.</p></div></div>
+   <div class="toolbar"><div><h2 style="margin:0;font-size:24px">Overview</h2><p>Your business at a glance.</p></div></div>
    <div class="panel"><div class="panel-body">
-    <div class="toolbar" style="margin:4px 0 12px;flex-wrap:wrap"><div><h3 style="margin:0">Sales performance</h3><p class="small muted">Net sales = recorded sale value less returns linked to those invoices. Select a date to inspect the sale-date cohort.</p></div><div class="toolbar-actions"><input id="dashSalesDate" type="date" style="width:auto"><button class="btn" id="dashRefresh">↻ Refresh</button><button class="btn primary" id="dashOpenSales">View sales register</button></div></div>
+    <div class="toolbar" style="margin:4px 0 12px;flex-wrap:wrap"><div><h3 style="margin:0">Sales overview</h3><p class="small muted">Net sales after linked returns. Choose a date to review sales.</p></div><div class="toolbar-actions"><input id="dashSalesDate" type="date" style="width:auto"><button class="btn" id="dashRefresh">↻ Refresh</button><button class="btn primary" id="dashOpenSales">View sales register</button></div></div>
     <div class="dashboard-grid" style="margin-bottom:16px">
-     <div class="inv-kpi"><span>Net sales on selected date</span><strong id="dashDaySales">₹0</strong><div class="small muted" id="dashDayOrders">0 orders</div></div>
-     <div class="inv-kpi"><span>Yesterday's net sales</span><strong id="dashYesterdaySales">₹0</strong><div class="small muted" id="dashYesterdayOrders">0 orders</div></div>
+     <div class="inv-kpi"><span>Net sales · selected day</span><strong id="dashDaySales">₹0</strong><div class="small muted" id="dashDayOrders">0 orders</div></div>
+     <div class="inv-kpi"><span>Yesterday</span><strong id="dashYesterdaySales">₹0</strong><div class="small muted" id="dashYesterdayOrders">0 orders</div></div>
      <div class="inv-kpi"><span>This month · net sales</span><strong id="dashMonthSales">₹0</strong><div class="small muted" id="dashMonthOrders">0 orders</div></div>
-     <div class="inv-kpi"><span>Pending / credit</span><strong id="dashPending">₹0</strong><div class="small muted" id="dashPendingCount">0 invoices</div></div>
+     <div class="inv-kpi"><span>Pending payments</span><strong id="dashPending">₹0</strong><div class="small muted" id="dashPendingCount">0 invoices</div></div>
     </div>
     <div class="settings-grid" style="margin-bottom:18px"><div class="settings-card"><h3>Sales by channel</h3><div id="dashChannelBreakdown" class="small muted">No sales for this date.</div></div><div class="settings-card"><h3>Sales by payment method</h3><div id="dashPaymentBreakdown" class="small muted">No sales for this date.</div></div></div>
-    <div class="settings-card" style="margin-bottom:18px"><h3>Top-selling products · selected date</h3><div id="dashTopProducts" class="small muted">No product sales for this date.</div></div>
+    <div class="settings-card" style="margin-bottom:18px"><h3>Top products · selected day</h3><div id="dashTopProducts" class="small muted">No product sales for this date.</div></div>
     <div class="fields three" style="margin-bottom:18px"><div class="settings-card"><div class="small muted">Active products</div><strong id="dashProductCount" style="font-size:24px">0</strong></div><div class="settings-card"><div class="small muted">Workspace</div><strong style="font-size:18px">Connected</strong></div><div class="settings-card"><div class="small muted">Business</div><strong style="font-size:18px">DURGA VENTURES</strong></div></div>
-    <h3 style="margin:8px 0 12px">Modules</h3><div id="dashboardModules" class="products"></div>
+    <div class="dash-section-heading"><h3>Workspace</h3><span>Open a module</span></div><div id="dashboardModules" class="products"></div>
    </div></div>
   </section>
 
@@ -608,7 +1012,7 @@ input,select,textarea,button{max-width:100%;font:inherit}
      <div><button class="btn" id="crmBackToChannels">← All customer types</button><h2 id="crmChannelTitle" style="margin:10px 0 0;font-size:20px">Online Customers</h2><p id="crmChannelDescription">Online customer records and order history.</p></div>
      <div class="toolbar-actions" style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" id="crmFindDuplicates" type="button">Find duplicate customers</button><button class="btn hidden" id="crmRepairLeadIds" type="button">Repair Lead IDs</button><button class="btn primary hidden" id="crmNewLead">+ Add Lead</button></div>
     </div>
-   <section id="crmDuplicatePanel" class="panel hidden" style="margin:12px 0;border:1px solid #e3c98d"><div class="panel-head" style="display:flex;justify-content:space-between;align-items:center"><strong>Possible duplicate customer records</strong><button class="btn" id="crmCloseDuplicates" type="button">Close</button></div><div class="panel-body"><p class="small muted">Matches are based on normalized mobile numbers or GSTIN. This is a review-only scan: no records, invoices or payments are changed.</p><div id="crmDuplicateResults" class="table-wrap"></div></div></section>
+   <section id="crmDuplicatePanel" class="panel hidden" style="margin:12px 0;border:1px solid #e3c98d"><div class="panel-head" style="display:flex;justify-content:space-between;align-items:center"><strong>Possible duplicate customer records</strong><button class="btn" id="crmCloseDuplicates" type="button">Close</button></div><div class="panel-body"><p class="small muted">Matches are based on normalized mobile numbers or GSTIN. Same-mobile CRM leads across channels should represent one customer identity. This is a review-only scan: no records, invoices or payments are changed.</p><div id="crmDuplicateResults" class="table-wrap"></div></div></section>
    <div class="inv-kpis">
     <div class="inv-kpi"><span>Total leads</span><strong id="crmTotalLeads">0</strong></div>
     <div class="inv-kpi"><span>Active leads</span><strong id="crmOpenLeads">0</strong></div>
@@ -938,7 +1342,7 @@ input,select,textarea,button{max-width:100%;font:inherit}
    </div>
   </section>
   <section id="posView" class="hidden">
-  <div class="toolbar"><div><h2 style="margin:0;font-size:20px">New sale</h2><p>Create retail or GST business sales. Sale records and stock movements are saved to your existing Firebase Firestore database; an internet connection is required.</p></div><div id="posHeaderStats" class="pos-header-stats" aria-live="polite"><span>Products <b id="posStatProducts">0</b></span><span>Stock units <b id="posStatUnits">0</b></span><span>Low stock <b id="posStatLow">0</b></span><span>Out of stock <b id="posStatOut">0</b></span></div><div class="toolbar-actions"><button class="btn" id="posFullscreenBtn" type="button" title="Use POS in full screen">⛶ Full screen</button><button class="btn" id="settingsBtn">⚙ POS Settings</button></div></div>
+  <div id="posHeaderStats" class="pos-header-stats" aria-live="polite" hidden><span>Products <b id="posStatProducts">0</b></span><span>Stock units <b id="posStatUnits">0</b></span><span>Low stock <b id="posStatLow">0</b></span><span>Out of stock <b id="posStatOut">0</b></span></div>
   <div class="layout">
    <section class="panel">
     <div class="panel-head"><h2>1. Select products</h2><div style="display:flex;align-items:center;gap:8px"><span class="status">Product master · editable</span><button class="btn primary" id="addProductBtn" style="padding:7px 10px">+ Add product</button></div></div>
@@ -948,8 +1352,9 @@ input,select,textarea,button{max-width:100%;font:inherit}
     </div>
    </section>
    <section class="panel">
-    <div class="panel-head"><h2>2. Current bill</h2><div style="display:flex;gap:6px"><button class="btn" id="holdBill" type="button">Ⅱ Hold bill</button><button class="btn danger" id="clearCart">Clear</button></div></div>
+    <div class="panel-head pos-bill-head"><h2>2. Current bill</h2><div class="pos-bill-head-actions"><button class="btn" id="posFullscreenBtn" type="button" title="Use POS in full screen">⛶ Full screen</button><button class="btn" id="settingsBtn" type="button">⚙ POS Settings</button><button class="btn" id="holdBill" type="button">Ⅱ Hold bill</button><button class="btn danger" id="clearCart" type="button">Clear</button></div></div>
     <div class="panel-body">
+      <div class="pos-bill-details">
      <div id="cartArea"></div>
      <div class="section-title" style="margin-top:4px">1. Business model</div>
      <div class="field"><label>Select business model</label>
@@ -1042,16 +1447,19 @@ input,select,textarea,button{max-width:100%;font:inherit}
       <div class="field"><label>Discount (₹)</label><input id="discount" type="number" min="0" step=".01" value="0"></div>
       <div class="field" id="discountReasonWrap"><label>Discount / price adjustment reason <span class="small muted">(required when a price is reduced or discount is applied)</span></label><input id="discountReason" maxlength="160" placeholder="e.g. Promotional offer, goodwill, manager approval"></div><div id="discountPolicyStatus" class="small muted" style="margin-top:5px">Cashier limit: ₹50 or 5% of bill value, whichever is lower. Manager / Super Admin approval is required above this limit.</div></div>
       <div class="field" id="paymentMethodWrap"><label>Payment method</label><select id="payment"><option>UPI</option><option>Cash</option><option>Card</option><option>Credit</option><option>Split payment</option><option id="codPaymentOption" value="COD" hidden>COD</option></select><div class="small muted" style="margin-top:4px">Credit sales require customer name and a valid 10-digit mobile number for receivables tracking.</div></div>
-     </div>
      <div id="cashTenderFields" class="fields hidden" style="margin-top:10px"><div class="field"><label>Cash received from customer (₹)</label><input id="cashTendered" type="number" min="0" step="0.01" value="0" placeholder="Enter amount received"></div><div class="field"><label>Change to return (₹)</label><div id="cashChangeDue" class="input" style="min-height:42px;display:flex;align-items:center;font-weight:700">₹0.00</div></div></div>
      <div id="splitFields" class="fields hidden" style="margin-top:10px"><div class="field"><label>UPI amount (₹)</label><input id="splitUpi" type="number" min="0" value="0"></div><div class="field"><label>Cash amount (₹)</label><input id="splitCash" type="number" min="0" step="0.01" value="0"></div><div class="field" style="grid-column:1/-1"><label>Unallocated / excess amount</label><div id="splitBalance" class="input" style="min-height:42px;display:flex;align-items:center;font-weight:700">₹0.00</div></div></div>
      <div class="field" id="paymentReferenceWrap" style="margin-top:10px"><label>Payment reference / transaction ID <span class="small muted">(optional)</span></label><input id="paymentReference" maxlength="120" placeholder="UPI UTR, bank reference, card slip or transaction ID"><div class="small muted" style="margin-top:4px">Saved with this sale for payment reconciliation. Do not enter PINs, OTPs or full card details.</div></div>
-     <div class="summary" id="summary"></div>
+     
+      </div>
+      <div class="pos-bill-checkout"><div class="summary" id="summary"></div>
      <div class="note" id="taxNotice">Tax details are not configured yet. Set GST rates and HSN codes in POS Settings before issuing a tax invoice.</div>
      <div class="footer-actions"><button class="btn light" id="saveDraft">Save draft</button><button class="btn" id="previewBtn">Preview invoice</button><button class="btn primary" id="completeSale">Complete sale</button></div>
      <div class="small muted" style="margin-top:10px">Use Complete sale directly from this screen; invoice preview is optional. Keyboard shortcuts: F2 = barcode field, F4 = complete sale, F8 = preview invoice. Sale completion uses your existing Firestore database and requires an internet connection. Invoice printing remains a preview and is not certified as a statutory GST tax invoice.</div>
     </div>
-   </section>
+   
+      </div>
+</section>
   </div>
   </section>
  </div>
@@ -1120,7 +1528,7 @@ input,select,textarea,button{max-width:100%;font:inherit}
     <div class="fields three" style="margin-top:12px">
      <div class="field"><label>Authorized ports in Chrome</label><select id="thermalPrinterPortList"><option value="">Not checked yet</option></select></div>
      <div class="field"><label>Serial speed</label><select id="thermalPrinterBaud"><option value="9600">9600 baud</option><option value="19200">19200 baud</option><option value="38400">38400 baud</option><option value="57600">57600 baud</option><option value="115200">115200 baud</option></select></div>
-     <div class="field"><label>Auto-print after shop billing</label><select id="thermalAutoPrint"><option value="yes">Enabled</option><option value="no">Disabled</option></select></div>
+     <div class="field"><label>Auto-print after shop billing</label><select id="thermalAutoPrint"><option value="yes">Enabled</option><option value="no">Disabled</option></select><div class="small muted">Automatically sends completed Shop invoices to the connected ESC/POS printer. B2B and Online sales are not auto-printed.</div></div>
     </div>
     <div class="fields three" style="margin-top:8px">
      <div class="field"><label>Paper width</label><input value="58mm (2 inch)" disabled></div>
@@ -1356,6 +1764,21 @@ let gstr2bLastReconciliation=null;
 let supplierBills=[];
 let editingSupplierId=null;
 let cart=[],type="retail",salesChannel="shop",drafts=[],sales=[],settings=JSON.parse(localStorage.getItem("wwos_settings")||"{}");
+
+function showPosSaleConfirm({title="Confirm sale",amount,description}){
+ return new Promise(resolve=>{
+  const prior=document.getElementById("posSaleConfirmModal");if(prior)prior.remove();
+  const wrap=document.createElement("div");wrap.id="posSaleConfirmModal";wrap.className="modal-backdrop";wrap.style.cssText="position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.58);backdrop-filter:blur(2px)";
+  wrap.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="posSaleConfirmTitle" style="width:min(520px,96vw);background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.28);overflow:hidden;color:#18332a"><div style="padding:20px 22px 14px;border-bottom:1px solid #e7eee9"><div style="display:flex;align-items:center;gap:10px"><span style="width:38px;height:38px;border-radius:11px;background:#eaf4ee;display:grid;place-items:center;font-size:19px">✓</span><div><div id="posSaleConfirmTitle" style="font-size:18px;font-weight:750">${title}</div><div style="font-size:12px;color:#687a70;margin-top:3px">Review the transaction before saving</div></div></div></div><div style="padding:20px 22px"><div style="font-size:13px;color:#52665b;line-height:1.65">${description}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:17px;padding:13px 15px;border-radius:11px;background:#f4f8f5"><span style="font-size:13px;color:#52665b">Sale total</span><strong style="font-size:22px;color:#164e39">${money(amount)}</strong></div><div style="font-size:11px;color:#78867e;line-height:1.5;margin-top:12px">The invoice will be recorded and stock deducted. The printed document is an invoice preview, not a certified statutory GST tax invoice.</div></div><div style="padding:14px 22px;background:#f8faf8;border-top:1px solid #e7eee9;display:flex;justify-content:flex-end;gap:10px"><button type="button" data-pos-confirm-cancel style="border:1px solid #d6e0d9;background:#fff;color:#33483c;border-radius:9px;padding:10px 17px;font-weight:650;cursor:pointer">Review bill</button><button type="button" data-pos-confirm-yes style="border:0;background:#15543c;color:#fff;border-radius:9px;padding:10px 19px;font-weight:700;cursor:pointer">Confirm & complete sale</button></div></div>`;
+  document.body.appendChild(wrap);
+  const finish=value=>{wrap.remove();resolve(value);};
+  wrap.querySelector("[data-pos-confirm-cancel]").onclick=()=>finish(false);
+  wrap.querySelector("[data-pos-confirm-yes]").onclick=()=>finish(true);
+  wrap.addEventListener("click",e=>{if(e.target===wrap)finish(false);});
+  const esc=e=>{if(e.key==="Escape"){document.removeEventListener("keydown",esc);finish(false);}};document.addEventListener("keydown",esc,{once:true});
+  wrap.querySelector("[data-pos-confirm-yes]").focus();
+ });
+}
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
 function toast(s){$("toast").textContent=s;$("toast").classList.remove("hidden");setTimeout(()=>$("toast").classList.add("hidden"),2600)}
 function persist(){
@@ -1686,6 +2109,31 @@ function crmLeadChannel(lead){
  if(raw==="shop"||raw==="retail"||raw==="store")return "shop";
  return "online";
 }
+function crmLeadBelongsToChannel(lead,channel){
+ // A lead belongs to its original CRM acquisition channel only. salesChannels records
+ // where the customer later purchased; it must not duplicate the lead across CRM tabs.
+ return crmLeadChannel(lead)===String(channel||"").toLowerCase();
+}
+function crmCustomerAcquisitionChannel(customer){
+ const raw=String(customer?.acquisitionChannel||customer?.firstSalesChannel||customer?.createdChannel||customer?.lastSalesChannel||"").trim().toLowerCase();
+ if(raw==="online"||raw.includes("d2c"))return "online";
+ if(raw==="b2b"||raw.includes("business"))return "b2b";
+ if(raw==="shop"||raw==="retail"||raw==="store")return "shop";
+ return (customer?.customerType==="B2B"||customer?.type==="b2b")?"b2b":"shop";
+}
+function crmCanonicalLeadForIdentity(mobile,gstin="",excludeId=""){
+ const m=crmNormalizeMobile(mobile||""),g=String(gstin||"").replace(/\s+/g,"").toUpperCase();
+ const matches=(crmLeads||[]).filter(l=>{
+  if(!l||String(l.id||"")===String(excludeId||""))return false;
+  const lm=crmNormalizeMobile(l.mobile||l.whatsappNumber||""),lg=String(l.gstin||"").replace(/\s+/g,"").toUpperCase();
+  return (m.length===10&&lm===m)||(!m&&g&&lg===g);
+ });
+ matches.sort((a,b)=>{
+  const seq=x=>{const z=String(x.leadCode||"").match(/^LD-(\d+)$/i);return z?Number(z[1]):Number.MAX_SAFE_INTEGER;};
+  return seq(a)-seq(b)||String(a.createdAt||"").localeCompare(String(b.createdAt||""))||String(a.id).localeCompare(String(b.id));
+ });
+ return matches[0]||null;
+}
 function crmFindDuplicateCustomers(){
  if(currentRole!=="super_admin")return toast("Only Super Admin can scan duplicate customer records.");
  const entries=[];
@@ -1750,7 +2198,14 @@ function crmRenderChannelCustomers(channel){
    if(!grouped.has(key))grouped.set(key,{name:sale.customer||"Online customer",mobile:sale.mobile||"",address:sale.deliveryAddress||sale.address||"",orders:[],total:0,leadId:sale.leadId||""});
    const g=grouped.get(key);g.orders.push(sale);g.total+=Number(sale.total||0);if(!g.address)g.address=sale.deliveryAddress||sale.address||"";
   });
-  crmLeads.filter(lead=>crmLeadChannel(lead)==="online").forEach(lead=>{
+  customers.filter(c=>crmCustomerAcquisitionChannel(c)==="online").forEach(c=>{
+   const mobile=crmNormalizeMobile(c.mobile||c.whatsappMobile||"");
+   const key=c.customerId?"id:"+c.customerId:(mobile?"m:"+mobile:"n:"+String(c.displayName||c.customerName||c.businessName||"").toLowerCase());
+   let g=grouped.get(key)||[...grouped.values()].find(x=>mobile&&crmNormalizeMobile(x.mobile||"")===mobile);
+   if(!g){g={name:c.businessName||c.displayName||c.customerName||"Online customer",mobile:c.mobile||c.whatsappMobile||"",address:c.address||"",customerId:c.customerId||"",orders:[],total:0};grouped.set(key,g);}
+   g.master=c;g.customerId=c.customerId||g.customerId||"";
+  });
+  crmLeads.filter(lead=>crmLeadBelongsToChannel(lead,"online")).forEach(lead=>{
    const mobile=crmNormalizeMobile(lead.mobile||"");
    const key="lead:"+(lead.id||"");
    const fallback=mobile?"m:"+mobile:"n:"+String(lead.name||"").toLowerCase();
@@ -1758,13 +2213,14 @@ function crmRenderChannelCustomers(channel){
    if(!g){g={name:lead.name||"Online customer",mobile:lead.mobile||"",address:lead.address||"",orders:[],total:0};grouped.set(key,g);}
    g.lead=lead;g.name=lead.name||g.name;g.mobile=lead.mobile||g.mobile;g.address=lead.address||g.address;
   });
-  const rows=[...grouped.values()];window.crmChannelCustomerRows=rows;
+  const rows=[...grouped.values()].filter(g=>g.master||g.lead);window.crmChannelCustomerRows=rows;
+  const channelLeadRecords=crmLeads.filter(l=>!l.isDeleted&&!l.deletedAt&&crmLeadBelongsToChannel(l,"online"));
   $("crmLeadRows").innerHTML=rows.map((g,i)=>{
-   const lead=g.lead,orders=g.orders.length,stage=lead?.status|| (orders?"Won":"Fresh");
-   return `<tr><td><strong>${escapeHtml(g.name)}</strong><div class="small muted">${escapeHtml(lead?crmDisplayLeadCode(lead):"Online order customer")}</div></td><td>${escapeHtml(g.mobile||"—")}</td><td style="white-space:normal">${escapeHtml(g.address||"—")}</td><td><span class="pill-active">${escapeHtml(stage)}</span></td><td>${orders}</td><td>${money(g.total)}</td><td><div class="actions"><button class="btn" data-crm360="${i}">Customer 360</button>${lead?`<button class="btn" data-crm-edit="${escapeHtml(lead.id)}">Edit lead</button><button class="btn primary" data-crm-order="${escapeHtml(lead.id)}" ${lead.status==="Lost"?"disabled":""}>${orders?"Create reorder":"Create order"}</button>`:`<button class="btn" data-crm-channel-edit="${i}">Edit</button><button class="btn primary" data-crm-channel-order="${i}">Create order</button>`}</div></td></tr>`;
+   const lead=g.lead,orders=g.orders.length,stage=lead?.status||"Customer record · no active CRM lead";
+   return `<tr><td><strong>${escapeHtml(g.name)}</strong><div class="small muted">${escapeHtml(lead?crmDisplayLeadCode(lead):"Customer Master record · no CRM lead")}</div></td><td>${escapeHtml(g.mobile||"—")}</td><td style="white-space:normal">${escapeHtml(g.address||"—")}</td><td><span class="pill-active" title="A customer record without a current CRM lead is not an active lead">${escapeHtml(stage)}</span></td><td>${orders}</td><td>${money(g.total)}</td><td><div class="actions"><button class="btn" data-crm360="${i}">Customer 360</button>${lead?`<button class="btn" data-crm-edit="${escapeHtml(lead.id)}">Edit lead</button><button class="btn primary" data-crm-order="${escapeHtml(lead.id)}" ${lead.status==="Lost"?"disabled":""}>${orders?"Create reorder":"Create order"}</button>`:`<button class="btn" data-crm-channel-edit="${i}">Edit</button><button class="btn primary" data-crm-channel-order="${i}">Create order</button>`}</div></td></tr>`;
   }).join("")||'<tr><td colspan="7" class="muted">No online customer records found yet.</td></tr>';
-  $("crmTotalLeads").textContent=String(rows.length);$("crmOpenLeads").textContent=String(rows.filter(g=>!g.orders.length).length);$("crmConvertedLeads").textContent=String(channelSales.length);
-  $("crmFoot").textContent=`Showing ${rows.length} online customers · ${channelSales.length} orders · ${money(channelSales.reduce((n,x)=>n+Number(x.total||0),0))} recorded online sales.`;
+  $("crmTotalLeads").textContent=String(channelLeadRecords.length);$("crmOpenLeads").textContent=String(channelLeadRecords.filter(l=>!['Won','Lost','Converted'].includes(l.status)).length);$("crmConvertedLeads").textContent=String(channelSales.length);
+  $("crmFoot").textContent=`${channelLeadRecords.length} actual Online CRM lead(s) · ${rows.length} customer record(s) shown (including Customer Master records without a CRM lead) · ${channelSales.length} orders · ${money(channelSales.reduce((n,x)=>n+Number(x.total||0),0))} recorded online sales.`;
   $("crmLeadRows").querySelectorAll("[data-crm360]").forEach(b=>b.onclick=()=>crmOpenCustomer360(b.dataset.crm360));
   $("crmLeadRows").querySelectorAll("[data-crm-edit]").forEach(b=>b.onclick=()=>crmOpenLead(b.dataset.crmEdit));
   $("crmLeadRows").querySelectorAll("[data-crm-order]").forEach(b=>b.onclick=()=>crmStartInvoice(b.dataset.crmOrder));
@@ -1781,16 +2237,14 @@ function crmRenderChannelCustomers(channel){
   const g=grouped.get(key);g.orders.push(sale);g.total+=Number(sale.total||0);const d=sale.created||sale.date||"";if(d>g.last)g.last=d;if(!g.mobile&&sale.mobile)g.mobile=sale.mobile;
  });
  customers.forEach(c=>{
-  const isB2B=c.customerType==="B2B"||c.type==="b2b";
-  if(channel==="b2b"&&!isB2B)return;
-  if(channel==="shop"&&isB2B)return;
+  if(crmCustomerAcquisitionChannel(c)!==channel)return;
   const mobile=crmNormalizeMobile(c.mobile||c.whatsappMobile||"");
   const key=c.customerId?"id:"+c.customerId:(mobile?"m:"+mobile:"n:"+String(c.displayName||c.customerName||c.businessName||"").trim().toLowerCase());
   if(!grouped.has(key))grouped.set(key,{key,name:c.businessName||c.displayName||c.customerName||"Unnamed customer",mobile:c.mobile||c.whatsappMobile||"",customerId:c.customerId||"",orders:[],total:0,last:"",master:c});
   else grouped.get(key).master=c;
  });
  // Include manually-created CRM leads in their own channel and attach to matching customers.
- crmLeads.filter(lead=>crmLeadChannel(lead)===channel).forEach(lead=>{
+ crmLeads.filter(lead=>!lead.isDeleted&&!lead.deletedAt&&crmLeadBelongsToChannel(lead,channel)).forEach(lead=>{
   const mobile=crmNormalizeMobile(lead.mobile||"");
   const gstin=String(lead.gstin||"").trim().toUpperCase();
   let group=[...grouped.values()].find(g=>{
@@ -1801,19 +2255,40 @@ function crmRenderChannelCustomers(channel){
   if(!group){const key="lead:"+lead.id;group={key,name:lead.name||"Unnamed lead",mobile:lead.mobile||"",customerId:"",orders:[],total:0,last:"",master:lead,lead};grouped.set(key,group);}
   else{group.lead=lead;group.name=lead.name||group.name;group.mobile=lead.mobile||group.mobile;}
  });
- const rows=[...grouped.values()].filter(g=>g.orders.length||g.master||g.lead);
+ const rows=[...grouped.values()].filter(g=>g.master||g.lead);
+ const channelLeadRecords=crmLeads.filter(l=>!l.isDeleted&&!l.deletedAt&&crmLeadBelongsToChannel(l,channel));
  window.crmChannelCustomerRows=rows;
  $("crmLeadRows").innerHTML=rows.map((g,i)=>{
   const last=g.last?new Date(g.last).toLocaleDateString():"—";
   const type=channel==="b2b"?"B2B": "Retail";
-  return `<tr><td><strong>${escapeHtml(g.name)}</strong><div class="small muted">${escapeHtml(g.lead?crmDisplayLeadCode(g.lead):(g.master?.customerCode||g.customerId||"Customer record"))}</div></td><td>${escapeHtml(g.mobile||"—")}</td><td>${type}</td><td>${g.orders.length}</td><td>${money(g.total)}</td><td>${last}</td><td><div class="actions"><button class="btn" data-crm360="${i}">Customer 360</button>${g.lead?`<button class="btn" data-crm-edit="${escapeHtml(g.lead.id)}">Edit lead</button>`:`<button class="btn" data-crm-channel-edit="${i}">Edit</button>`}${g.customerId?`<button class="btn primary" data-crm-channel-order="${i}">Create order</button>`:""}</div></td></tr>`;
+  return `<tr><td><strong>${escapeHtml(g.name)}</strong><div class="small muted">${escapeHtml(g.lead?crmDisplayLeadCode(g.lead):"Customer Master record · no CRM lead")}</div></td><td>${escapeHtml(g.mobile||"—")}</td><td>${type}</td><td>${g.orders.length}</td><td>${money(g.total)}</td><td>${last}</td><td><div class="actions"><button class="btn" data-crm360="${i}">Customer 360</button>${g.lead?`<button class="btn" data-crm-edit="${escapeHtml(g.lead.id)}">Edit lead</button>`:`<button class="btn" data-crm-channel-edit="${i}">Edit</button>`}${g.customerId?`<button class="btn primary" data-crm-channel-order="${i}">Create order</button>`:""}</div></td></tr>`;
  }).join("")||`<tr><td colspan="7" class="muted">No ${channel==="b2b"?"B2B":channel==="shop"?"shop":"online"} customer records found yet.</td></tr>`;
- $("crmLeadRows").querySelectorAll("[data-crm-channel-edit]").forEach(b=>b.onclick=()=>crmEditChannelCustomer(Number(b.dataset.crmChannelEdit)));
- $("crmLeadRows").querySelectorAll("[data-crm-channel-order]").forEach(b=>b.onclick=()=>crmCreateChannelOrder(Number(b.dataset.crmChannelOrder)));
- $("crmTotalLeads").textContent=String(rows.length);
- $("crmOpenLeads").textContent=String(rows.filter(g=>g.orders.length===0).length);
+ // Bind every action rendered in Shop/B2B customer rows after replacing the table HTML.
+ // These rows use the shared CRM table but have channel-specific order creation.
+ const customerRows=$("crmLeadRows");
+ customerRows.querySelectorAll("[data-crm360]").forEach(b=>b.onclick=()=>crmOpenCustomer360(Number(b.dataset.crm360)));
+ customerRows.querySelectorAll("[data-crm-edit]").forEach(b=>b.onclick=()=>crmOpenLead(b.dataset.crmEdit));
+ customerRows.querySelectorAll("[data-crm-channel-edit]").forEach(b=>b.onclick=()=>crmEditChannelCustomer(Number(b.dataset.crmChannelEdit)));
+ customerRows.querySelectorAll("[data-crm-channel-order]").forEach(b=>b.onclick=()=>crmCreateChannelOrder(Number(b.dataset.crmChannelOrder)));
+ $("crmTotalLeads").textContent=String(channelLeadRecords.length);
+ $("crmOpenLeads").textContent=String(channelLeadRecords.filter(l=>!['Won','Lost','Converted'].includes(l.status)).length);
  $("crmConvertedLeads").textContent=String(channelSales.length);
- $("crmFoot").textContent=`Showing ${rows.length} customers · ${channelSales.length} orders · ${money(channelSales.reduce((n,x)=>n+Number(x.total||0),0))} recorded sales.`;
+ $("crmFoot").textContent=`${channelLeadRecords.length} actual CRM lead(s) · ${rows.length} customer record(s) shown (including Customer Master records without a CRM lead) · ${channelSales.length} orders · ${money(channelSales.reduce((n,x)=>n+Number(x.total||0),0))} recorded sales.`;
+}
+async function crmDeleteChannelCustomer(index){
+ const g=window.crmChannelCustomerRows?.[index];if(!g)return;
+ if(!crmLeadCanWrite())return toast("CRM write permission is required to delete customer records.");
+ const customerId=String(g.customerId||g.master?.customerId||"").trim();
+ if(!customerId)return toast("Customer record ID is missing; cannot safely delete this record.");
+ const linked=(sales||[]).filter(x=>String(x.customerId||"")===customerId||((crmNormalizeMobile(x.mobile||"")===crmNormalizeMobile(g.mobile||""))&&crmNormalizeMobile(g.mobile||""))).length;
+ const message=`PERMANENTLY DELETE CUSTOMER RECORD\n\n${g.name||"Unnamed customer"}\nMobile: ${g.mobile||"—"}\nCustomer ID: ${customerId}\n\n${linked?`${linked} linked sale(s) were found. Sales and invoices will NOT be deleted, but this customer profile will be removed and may no longer resolve from those sales.`:"No linked sales were found."}\n\nThis permanently deletes the customers/${customerId} document from Firestore. This cannot be undone. Continue?`;
+ if(!confirm(message))return;
+ try{
+  await deleteDoc(doc(db,"customers",customerId));
+  customers=(customers||[]).filter(c=>String(c.customerId||c.id||"")!==customerId);
+  if(crmActiveChannel)crmRenderChannelCustomers(crmActiveChannel);else renderCrm();
+  toast("Customer record permanently deleted. Historical sales and invoices were retained; the CRM customer row was removed.");
+ }catch(err){console.error("CRM customer permanent deletion failed",err);toast(err?.message||"Could not permanently delete customer. Check Firestore delete permissions.");}
 }
 let crmEditingChannelCustomer=null;
 function crmEditChannelCustomer(index){
@@ -1928,7 +2403,7 @@ function renderCrm(){
  if(crmActiveChannel){crmRenderChannelCustomers(crmActiveChannel);return;}
  const q=($("crmSearch")?.value||"").trim().toLowerCase();
  const stage=$("crmStatusFilter")?.value||"";
- const rows=crmLeads.filter(l=>(!stage||l.status===stage)&&(!q||[l.name,l.mobile,l.address,l.pinCode].join(" ").toLowerCase().includes(q)));
+ const rows=crmLeads.filter(l=>!l.isDeleted&&!(l.deletedAt)&&(!stage||l.status===stage)&&(!q||[l.name,l.mobile,l.address,l.pinCode].join(" ").toLowerCase().includes(q)));
  $("crmTotalLeads").textContent=String(crmLeads.length);
  $("crmOpenLeads").textContent=String(crmLeads.filter(l=>!["Converted","Won","Lost"].includes(l.status)).length);
  $("crmConvertedLeads").textContent=String(crmLeads.filter(l=>l.status==="Converted").length);
@@ -1948,6 +2423,7 @@ function renderCrm(){
    <td>${escapeHtml(payment)}</td>
    <td><div class="actions">
     <button class="btn" data-crm-edit="${escapeHtml(l.id)}">Edit</button>
+    
     <button class="btn primary" data-crm-order="${escapeHtml(l.id)}" ${l.status==="Lost"?"disabled":""}>${converted?"Create reorder":"Create order"}</button>
    </div></td>
   </tr>`;
@@ -1958,6 +2434,40 @@ function renderCrm(){
  $("crmLeadRows").querySelectorAll("[data-crm-edit]").forEach(b=>b.onclick=()=>crmOpenLead(b.dataset.crmEdit));
  $("crmLeadRows").querySelectorAll("[data-crm-order]").forEach(b=>b.onclick=()=>crmStartInvoice(b.dataset.crmOrder));
 }
+async function crmDeleteLead(leadId){
+ const lead=(crmLeads||[]).find(x=>x.id===leadId);
+ if(!lead)return toast("Lead not found. Refresh CRM and try again.");
+ if(!crmLeadCanWrite())return toast("CRM write permission is required to delete leads.");
+ const linked=(sales||[]).filter(x=>x.leadId===leadId).length;
+ const details=`${crmDisplayLeadCode(lead)||"(ID pending)"}  ·  Mobile: ${lead.mobile||"—"}\n${linked} linked sale(s) found. Their invoices and sales records will be retained. The historical Lead ID text will remain on those sales.`;
+ const warning=linked?"Customer 360 may no longer resolve this CRM lead from historical sales after deletion.":"No linked sales were found.";
+ if(!await showCrmDeleteConfirm({title:"Permanently delete CRM lead?",name:lead.name||"Unnamed customer",details,warning}))return;
+ try{
+  await deleteDoc(doc(db,"leads",leadId));
+  const verify=await getDoc(doc(db,"leads",leadId));
+  if(verify.exists())throw new Error("Firestore still returns this lead after the delete request. Check Firestore rules and document path.");
+  crmLeads=crmLeads.filter(x=>x.id!==leadId);
+  const fresh=await getDocs(collection(db,"leads"));
+  crmLeads=fresh.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>String(b.updatedAt||b.createdAt||"").localeCompare(String(a.updatedAt||a.createdAt||"")));
+  renderCrm();
+  toast("Lead permanently deleted from Firestore.");
+ }catch(err){console.error("CRM lead permanent deletion failed",err);showCrmDeleteError(`${err?.code?err.code+": ":""}${err?.message||"Could not permanently delete lead."}\n\nIf the error is permission-denied, update Firestore rules to allow delete on /leads/{leadId} for authorized CRM administrators.`);}
+}
+
+function showCrmDeleteConfirm({title="Confirm permanent deletion",name="",details="",warning=""}){
+ return new Promise(resolve=>{
+  document.getElementById("crmDeleteConfirmModal")?.remove();
+  const wrap=document.createElement("div");wrap.id="crmDeleteConfirmModal";wrap.style.cssText="position:fixed;inset:0;z-index:13000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.60);backdrop-filter:blur(3px)";
+  const esc=v=>String(v??"").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[c]));
+  wrap.innerHTML=`<section role="dialog" aria-modal="true" aria-labelledby="crmDeleteTitle" style="width:min(540px,96vw);max-height:88vh;display:flex;flex-direction:column;background:#fff;color:#18332a;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.30);overflow:hidden"><header style="padding:20px 22px 15px;border-bottom:1px solid #e7eee9;display:flex;gap:12px;align-items:center"><div style="width:40px;height:40px;flex:none;border-radius:12px;background:#fff0ef;color:#b42318;display:grid;place-items:center;font-size:21px">!</div><div><div id="crmDeleteTitle" style="font-size:18px;font-weight:750">${esc(title)}</div><div style="font-size:12px;color:#718078;margin-top:3px">This action cannot be undone</div></div></header><div style="padding:20px 22px;overflow:auto"><div style="font-weight:700;font-size:15px;margin-bottom:8px">${esc(name)}</div><div style="font-size:13px;line-height:1.65;color:#52665b;white-space:pre-line">${esc(details)}</div>${warning?`<div style="margin-top:14px;padding:12px 13px;border:1px solid #f2d29b;background:#fff8e8;border-radius:10px;color:#7a4a08;font-size:12px;line-height:1.55">${esc(warning)}</div>`:""}</div><footer style="padding:14px 22px;background:#f8faf8;border-top:1px solid #e7eee9;display:flex;justify-content:flex-end;gap:10px"><button type="button" data-crm-delete-cancel style="border:1px solid #d6e0d9;background:#fff;color:#33483c;border-radius:9px;padding:10px 17px;font-weight:650;cursor:pointer">Cancel</button><button type="button" data-crm-delete-yes style="border:0;background:#b42318;color:#fff;border-radius:9px;padding:10px 18px;font-weight:700;cursor:pointer">Permanently delete</button></footer></section>`;
+  document.body.appendChild(wrap);const finish=v=>{wrap.remove();resolve(v)};wrap.querySelector('[data-crm-delete-cancel]').onclick=()=>finish(false);wrap.querySelector('[data-crm-delete-yes]').onclick=()=>finish(true);wrap.addEventListener('click',e=>{if(e.target===wrap)finish(false)});const onKey=e=>{if(e.key==='Escape'){document.removeEventListener('keydown',onKey);finish(false)}};document.addEventListener('keydown',onKey);wrap.querySelector('[data-crm-delete-cancel]').focus();
+ });
+}
+function showCrmDeleteError(message){
+ const wrap=document.createElement('div');wrap.style.cssText="position:fixed;inset:0;z-index:13001;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.58)";
+ wrap.innerHTML=`<section role="alertdialog" aria-modal="true" style="width:min(500px,96vw);background:#fff;border-radius:14px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.28);color:#18332a"><div style="font-size:18px;font-weight:750;margin-bottom:9px">Deletion failed</div><div style="font-size:13px;line-height:1.6;color:#52665b;white-space:pre-wrap;overflow-wrap:anywhere">${String(message||'Unknown Firestore error').replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[c]))}</div><div style="display:flex;justify-content:flex-end;margin-top:18px"><button type="button" style="border:0;background:#15543c;color:#fff;border-radius:9px;padding:10px 18px;font-weight:700;cursor:pointer">Close</button></div></section>`;document.body.appendChild(wrap);wrap.querySelector('button').onclick=()=>wrap.remove();
+}
+
 function crmSelectedPayment(){
  return document.querySelector('input[name="crmLeadPayment"]:checked')?.value||"Prepaid";
 }
@@ -2181,6 +2691,23 @@ async function crmCompleteOrder(){
   if($("crmOrderComplete")){$("crmOrderComplete").disabled=crmOrderItems.length===0;$("crmOrderComplete").textContent="Confirm & create invoice";}
  }
 }
+function crmHighestLeadSequence(){
+ return (crmLeads||[]).reduce((max,l)=>{
+  const code=String(l.leadCode||"").trim();
+  const m=code.match(/^LD-(\d+)$/i);
+  return m?Math.max(max,Number(m[1])||0):max;
+ },0);
+}
+function crmFindIdentityConflict(mobile,gstin,excludeId=""){
+ const m=crmNormalizeMobile(mobile||"");
+ const g=String(gstin||"").replace(/\s+/g,"").toUpperCase();
+ return (crmLeads||[]).find(l=>{
+  if(!l||String(l.id||"")===String(excludeId||""))return false;
+  const lm=crmNormalizeMobile(l.mobile||l.whatsappNumber||"");
+  const lg=String(l.gstin||"").replace(/\s+/g,"").toUpperCase();
+  return (m.length===10&&lm===m)||(g&&lg===g);
+ })||null;
+}
 async function crmSaveLead(){
  if(!crmLeadCanWrite())return toast("Your role cannot save CRM leads.");
  const name=$("crmLeadName").value.trim();
@@ -2207,7 +2734,10 @@ async function crmSaveLead(){
  const reminderTime=$("crmLeadReminderTime").value;
  const reminderNote=$("crmLeadReminderNote").value.trim();
  const expectedOrderValue=Math.max(0,Number($("crmLeadExpectedValue").value)||0);
- const id=$("crmLeadId").value.trim()||("LEAD-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+crypto.randomUUID().slice(0,8).toUpperCase());
+ const requestedId=$("crmLeadId").value.trim();
+ const requestedExisting=crmLeads.find(l=>l.id===requestedId);
+ const identityMatch=requestedExisting?null:crmCanonicalLeadForIdentity(mobile,b2b?($("crmB2BGstin")?.value||""):"");
+ const id=requestedId||(identityMatch?.id)||("LEAD-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+crypto.randomUUID().slice(0,8).toUpperCase());
  const existingLead=crmLeads.find(l=>l.id===id);
  let leadCode=existingLead?.leadCode||"";
  if(!name)return toast("Enter the customer name.");
@@ -2219,6 +2749,8 @@ async function crmSaveLead(){
  if(pinCode&&pinCode.length!==6)return toast("Enter a valid 6-digit PIN code.");
  if(pinCode&&indiaPostOfficesForPin(pinCode).length&&!postOffice)return toast("Select the correct India Post office for this PIN code.");
  if(existingLead?.invoiceId&&status!=="Won")return toast("An invoiced lead is already Won and cannot be moved to another stage.");
+ // One normalized mobile identifies one global CRM lead across Shop, Online and B2B.
+ // Cross-channel entry reuses the canonical existing lead rather than creating a new Lead ID.
  const now=new Date().toISOString();
  const priorTimeline=Array.isArray(existingLead?.activityTimeline)?existingLead.activityTimeline:[];
  const activityTimeline=[...priorTimeline];
@@ -2229,7 +2761,11 @@ async function crmSaveLead(){
   activityTimeline.push({type:"Follow-up reminder set / updated",stage:status,note:`${nextFollowUpDate||"No date"} ${reminderTime||""} · ${reminderNote||"No reminder note"}`.trim(),at:now,by:currentUser.uid});
  }
  const lead={
-  ...(existingLead||{}),id,leadCode,name,mobile,whatsappNumber,address,pinCode,state,city,paymentMode,salesChannel:channel,channel,leadType:channel==="b2b"?"B2B":channel==="shop"?"Shop":"Online",activityTimeline:activityTimeline.slice(-100),
+  ...(existingLead||{}),id,leadCode,name,mobile,whatsappNumber,address,pinCode,state,city,paymentMode,
+  salesChannel:existingLead?.salesChannel||channel,channel:existingLead?.channel||channel,
+  leadType:existingLead?.leadType||(channel==="b2b"?"B2B":channel==="shop"?"Shop":"Online"),
+  salesChannels:[...new Set([...(Array.isArray(existingLead?.salesChannels)?existingLead.salesChannels:[]),existingLead?crmLeadChannel(existingLead):channel,channel])],
+  channelSources:{...(existingLead?.channelSources||{}),[channel]:source},activityTimeline:activityTimeline.slice(-100),
   b2bContactName:b2b?b2bContactName:(existingLead?.b2bContactName||""),
   b2bDesignation:b2b?$("crmB2BDesignation").value.trim():(existingLead?.b2bDesignation||""),
   b2bCategory:b2b?$("crmB2BCategory").value:(existingLead?.b2bCategory||""),
@@ -2260,7 +2796,7 @@ async function crmSaveLead(){
    const counterRef=doc(db,"settings","crmLeadCounter");
    await runTransaction(db,async tx=>{
     const counterSnap=await tx.get(counterRef);
-    const lastNumber=Math.max(Number(counterSnap.exists()?counterSnap.data().lastNumber:0)||0,crmLeads.length);
+    const lastNumber=Math.max(Number(counterSnap.exists()?counterSnap.data().lastNumber:0)||0,crmHighestLeadSequence());
     const nextNumber=lastNumber+1;
     leadCode=`LD-${String(nextNumber).padStart(4,"0")}`;
     lead.leadCode=leadCode;
@@ -2656,6 +3192,73 @@ async function thermalPrinterWrite(bytes){
  if(!wellwithThermalPort?.writable)throw new Error("Printer is not connected.");
  const writer=wellwithThermalPort.writable.getWriter();
  try{await writer.write(bytes);}finally{writer.releaseLock();}
+}
+function thermalReceiptLine(left,right,width=32){
+ const a=String(left??""),b=String(right??"");
+ const room=Math.max(1,width-b.length-1);
+ return a.slice(0,room).padEnd(room," ")+" "+b.slice(-Math.max(1,width-room-1));
+}
+function thermalReceiptWrap(value,width=32){
+ const words=String(value??"").split(/\s+/).filter(Boolean),lines=[];let line="";
+ for(const word of words){
+  if(!line){line=word;continue;}
+  if((line+" "+word).length<=width)line+=" "+word;
+  else{lines.push(line);line=word;}
+ }
+ if(line)lines.push(line);
+ return lines.length?lines:[""];
+}
+function buildThermalReceipt(s){
+ const enc=new TextEncoder(),parts=[];
+ const add=t=>parts.push(enc.encode(String(t)));
+ const esc=new Uint8Array([0x1b,0x40]);parts.push(esc);
+ // Centered store heading.
+ parts.push(new Uint8Array([0x1b,0x61,0x01,0x1b,0x45,0x01]));
+ add("WELLWITH\n");
+ parts.push(new Uint8Array([0x1b,0x45,0x00]));
+ add("DURGA VENTURES\n");
+ parts.push(new Uint8Array([0x1b,0x61,0x00]));
+ const width=32;
+ add("--------------------------------\n");
+ add(thermalReceiptLine("Invoice",s.invoiceNo||"—",width)+"\n");
+ add(thermalReceiptLine("Date",new Date(s.created||Date.now()).toLocaleString("en-IN"),width)+"\n");
+ add("--------------------------------\n");
+ for(const line of thermalReceiptWrap(s.customer||"Walk-in customer",width))add(line+"\n");
+ if(s.mobile)add("Mobile: "+String(s.mobile)+"\n");
+ add("--------------------------------\n");
+ add("ITEM                 QTY    AMT\n");
+ add("--------------------------------\n");
+ for(const item of (s.items||[])){
+  for(const nameLine of thermalReceiptWrap(item.name||"Item",width))add(nameLine+"\n");
+  const qty=String(Number(item.qty||0));
+  const amount=(Number(item.price||0)*Number(item.qty||0)).toFixed(2);
+  add(thermalReceiptLine(`${qty} x ${Number(item.price||0).toFixed(2)}`,amount,width)+"\n");
+ }
+ add("--------------------------------\n");
+ let taxable=0,tax=0;
+ for(const item of (s.items||[])){
+  const gross=Number(item.price||0)*Number(item.qty||0);
+  const rate=item.gst===null||item.gst===undefined?0:Number(item.gst);
+  const base=item.gst===null||item.gst===undefined?gross:gross/(1+rate/100);
+  taxable+=base;tax+=gross-base;
+ }
+ add(thermalReceiptLine("Taxable value",taxable.toFixed(2),width)+"\n");
+ add(thermalReceiptLine("GST",tax.toFixed(2),width)+"\n");
+ if(Number(s.discount||0)>0)add(thermalReceiptLine("Discount","-"+Number(s.discount).toFixed(2),width)+"\n");
+ if(Number(s.deliveryCharge||0)>0)add(thermalReceiptLine("Delivery",Number(s.deliveryCharge).toFixed(2),width)+"\n");
+ parts.push(new Uint8Array([0x1b,0x45,0x01]));
+ add(thermalReceiptLine("GRAND TOTAL",Number(s.total||0).toFixed(2),width)+"\n");
+ parts.push(new Uint8Array([0x1b,0x45,0x00]));
+ add("Payment: "+String(s.onlinePaymentMode||s.payment||"—")+"\n");
+ if(s.paymentReference)add("Ref: "+String(s.paymentReference)+"\n");
+ add("\nThank you!\nVisit us again.\n\n\n");
+ const length=parts.reduce((n,p)=>n+p.length,0),all=new Uint8Array(length);let offset=0;
+ for(const part of parts){all.set(part,offset);offset+=part.length;}
+ return all;
+}
+async function thermalPrinterPrintSale(s){
+ if(!wellwithThermalPort?.writable)throw new Error("Thermal printer is not connected. Reconnect it in POS Settings.");
+ await thermalPrinterWrite(buildThermalReceipt(s));
 }
 async function thermalPrinterTestPrint(){
  try{
@@ -4043,7 +4646,27 @@ function holdCurrentBill(){
  const held={...snapshot(),id:crypto.randomUUID(),status:"Held",heldAt:new Date().toISOString()};
  drafts.unshift(held);persist();resetCurrentBill();toast("Bill held. You can start another customer’s billing now.");
 }
-function saveDraft(){if(!cart.length)return toast("Add at least one product.");if(salesChannel!=="b2b"&&!saleSourceValue())return toast("Select the sale source first.");drafts.unshift(snapshot());persist();toast("Draft saved. Cloud sync will run automatically when connected.")}
+async function saveDraft(){
+ if(!cart.length)return toast("Add at least one product.");
+ if(salesChannel!=="b2b"&&!saleSourceValue())return toast("Select the sale source first.");
+ if(!requirePermission("drafts.readwrite"))return;
+ if(!currentUser||!activeProfile)return toast("Sign in with an active account before saving a draft.");
+ if(!navigator.onLine)return toast("Internet connection is required to save a draft to Firestore.");
+ const button=$("saveDraft");if(button){button.disabled=true;button.textContent="Saving draft…";}
+ const draft=snapshot();
+ const record={...draft,createdBy:currentUser.uid,updatedAt:new Date().toISOString(),updatedBy:currentUser.uid};
+ try{
+  await setDoc(doc(db,"drafts",draft.id),record,{merge:false});
+  drafts=[record,...drafts.filter(x=>String(x.id)!==String(draft.id))];
+  if(cloudSyncBaseline){cloudSyncBaseline.drafts={...(cloudSyncBaseline.drafts||{}),[String(draft.id)]:cloudComparable(record)};}
+  setCloudStatus("Cloud synced · draft saved");
+  toast("Draft saved successfully to Firestore.");
+ }catch(err){
+  console.error("Draft save failed:",err);
+  setCloudStatus("Draft save failed",true);
+  toast(err?.message||"Draft could not be saved. Check Firestore drafts permissions.");
+ }finally{if(button){button.disabled=false;button.textContent="Save draft";}}
+}
 function invoiceSeriesFor(channel){
  const map={shop:{prefix:settings.shopPrefix||settings.prefix||"INV-",next:settings.shopNextNumber||settings.nextNumber||1},
  b2b:{prefix:settings.b2bPrefix||"B2B-",next:settings.b2bNextNumber||1},
@@ -4175,11 +4798,11 @@ let posSaleCommitInProgress=false;
 let lastCompletedPosSale=null;
 function ensurePosSuccessModal(){
  if($("posSaleSuccessModal"))return;
- const modal=document.createElement("div");modal.id="posSaleSuccessModal";modal.className="modal hidden";
- modal.innerHTML=`<div class="modal-card" style="max-width:480px;text-align:center;padding:28px"><div style="font-size:48px;color:#16834a;line-height:1">✓</div><h2 style="margin:12px 0 5px">Sale completed successfully</h2><p class="muted" style="margin:0 0 18px">The sale has been saved to Firestore and stock movements have been recorded.</p><div style="background:#f1f7f3;border:1px solid #d7e8dc;border-radius:10px;padding:16px;margin-bottom:18px"><div class="small muted">Invoice number</div><div id="posSuccessInvoice" style="font-size:22px;font-weight:800;color:#174b37"></div><div class="small muted" style="margin-top:10px">Amount</div><div id="posSuccessTotal" style="font-size:25px;font-weight:800"></div><div id="posSuccessCustomer" class="small muted" style="margin-top:7px"></div></div><div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap"><button type="button" class="btn primary" id="posSuccessPrint">Print receipt</button><button type="button" class="btn" id="posSuccessNew">New sale</button></div><p class="small muted" style="margin:16px 0 0">The receipt remains an invoice preview until statutory GST requirements are verified.</p></div>`;
+ const modal=document.createElement("div");modal.id="posSaleSuccessModal";modal.className="modal-backdrop hidden";modal.style.zIndex="11000";
+ modal.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="posSuccessTitle" style="max-width:480px;text-align:center;padding:28px"><div style="font-size:48px;color:#16834a;line-height:1">✓</div><h2 id="posSuccessTitle" style="margin:12px 0 5px">Sale completed successfully</h2><p class="muted" style="margin:0 0 18px">The sale has been saved to Firestore and stock movements have been recorded.</p><div style="background:#f1f7f3;border:1px solid #d7e8dc;border-radius:10px;padding:16px;margin-bottom:18px"><div class="small muted">Invoice number</div><div id="posSuccessInvoice" style="font-size:22px;font-weight:800;color:#174b37"></div><div class="small muted" style="margin-top:10px">Amount</div><div id="posSuccessTotal" style="font-size:25px;font-weight:800"></div><div id="posSuccessCustomer" class="small muted" style="margin-top:7px"></div></div><div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap"><button type="button" class="btn primary" id="posSuccessPrint">Print receipt</button><button type="button" class="btn" id="posSuccessNew">New sale</button></div><p class="small muted" style="margin:16px 0 0">Print receipt sends directly to the connected 58mm thermal printer. If disconnected, reconnect it in POS Settings. The receipt remains an invoice preview until statutory GST requirements are verified.</p></div>`;
  document.body.appendChild(modal);
- $("posSuccessPrint").onclick=()=>{if(!lastCompletedPosSale)return;$("receipt").innerHTML=buildInvoice(lastCompletedPosSale);modal.classList.add("hidden");window.print();};
- $("posSuccessNew").onclick=()=>{modal.classList.add("hidden");resetCurrentBill();$("barcodeInput")?.focus();};
+ $("posSuccessPrint").onclick=async()=>{if(!lastCompletedPosSale)return;const sale={...lastCompletedPosSale};try{if(!wellwithThermalPort?.writable){if(!thermalPrinterSupported())throw new Error("Web Serial is unavailable in this browser context. Reopen Wellwith OS in Chrome and connect the printer in POS Settings.");const ports=await navigator.serial.getPorts();wellwithThermalPorts=ports;if(!ports.length)throw new Error("No authorized thermal printer port is available. Reconnect the Everycom EC58B in POS Settings.");const selectedIndex=Number($("thermalPrinterPortList")?.value);const port=Number.isInteger(selectedIndex)&&ports[selectedIndex]?ports[selectedIndex]:ports[0];await thermalPrinterOpenPort(port);}await thermalPrinterPrintSale(sale);modal.classList.add("hidden");toast("Thermal receipt sent to Everycom EC58B.");}catch(e){console.error("Thermal receipt print failed",e);toast("Thermal printing unavailable: "+(e?.message||"Reconnect the printer in POS Settings."));}};
+ $("posSuccessNew").onclick=()=>{modal.classList.add("hidden");resetCurrentBill();setTimeout(()=>{const scanner=$("posBarcodeInput");if(scanner){scanner.focus();scanner.select();}},80);};
 }
 function showPosSaleSuccess(sale){lastCompletedPosSale={...sale,items:(sale.items||[]).map(x=>({...x}))};ensurePosSuccessModal();$("posSuccessInvoice").textContent=sale.invoiceNo||"—";$("posSuccessTotal").textContent=money(sale.total);$("posSuccessCustomer").textContent=sale.customer||sale.mobile||"Walk-in customer";$("posSaleSuccessModal").classList.remove("hidden");}
 let posCommitControlStates=[];
@@ -4266,12 +4889,21 @@ async function finalizeSale(options={}){
  const canAutoCreateCrmLead=!leadRef&&crmLeadCanWrite()&&!!crmIdentityKey&&!!crmIdentityName&&crmIdentityName.toLowerCase()!=="walk-in customer";
  let autoLeadCandidate=null,autoLeadIsNew=false;
  if(canAutoCreateCrmLead){
-  const matchingLeads=normalizedMobile.length===10?await getDocs(query(collection(db,"leads"),where("mobile","==",normalizedMobile))):await getDocs(query(collection(db,"leads"),where("gstin","==",normalizedGstin)));
-  if(matchingLeads.docs.length){
-   const match=matchingLeads.docs.map(d=>({ref:d.ref,data:d.data()})).sort((a,b)=>String(b.data.createdAt||"").localeCompare(String(a.data.createdAt||"")))[0];
-   leadRef=match.ref;autoLeadCandidate=match.data;
+  const loadedMatch=(crmLeads||[]).filter(l=>{
+   const lm=crmNormalizeMobile(l.mobile||l.whatsappNumber||"");
+   const lg=String(l.gstin||"").replace(/\s+/g,"").toUpperCase();
+   return (normalizedMobile.length===10&&lm===normalizedMobile)||(normalizedGstin&&lg===normalizedGstin);
+  }).sort((a,b)=>{const seq=x=>{const m=String(x.leadCode||"").match(/^LD-(\d+)$/i);return m?Number(m[1]):Number.MAX_SAFE_INTEGER;};return seq(a)-seq(b)||String(a.createdAt||"").localeCompare(String(b.createdAt||""));})[0];
+  if(loadedMatch){
+   leadRef=doc(db,"leads",loadedMatch.id);autoLeadCandidate=loadedMatch;
   }else{
-   leadRef=doc(db,"leads","POS-"+(normalizedMobile.length===10?normalizedMobile:normalizedGstin));autoLeadIsNew=true;
+   const matchingLeads=normalizedMobile.length===10?await getDocs(query(collection(db,"leads"),where("mobile","==",normalizedMobile))):await getDocs(query(collection(db,"leads"),where("gstin","==",normalizedGstin)));
+   if(matchingLeads.docs.length){
+    const match=matchingLeads.docs.map(d=>({ref:d.ref,data:d.data()})).sort((a,b)=>{const seq=x=>{const m=String(x.data.leadCode||"").match(/^LD-(\d+)$/i);return m?Number(m[1]):Number.MAX_SAFE_INTEGER;};return seq(a)-seq(b)||String(a.data.createdAt||"").localeCompare(String(b.data.createdAt||""));})[0];
+    leadRef=match.ref;autoLeadCandidate=match.data;
+   }else{
+    leadRef=doc(db,"leads","POS-"+(normalizedMobile.length===10?normalizedMobile:normalizedGstin));autoLeadIsNew=true;
+   }
   }
   s.leadId=leadRef.id;
  }
@@ -4288,7 +4920,7 @@ async function finalizeSale(options={}){
   existing.qty+=Number(item.qty)||0;itemGroups.set(item.productId,existing);
  }
  if([...itemGroups.values()].some(x=>!Number.isFinite(x.qty)||x.qty<=0))return toast("Every product quantity must be greater than zero.");
- if(!confirm(`${fromCrm?"Confirm CRM order":"Confirm this sale"} for ${money(s.total)}? The invoice will be recorded, stock deducted, and (for identifiable customers) linked to CRM; online orders also create a dispatch task. The printed document is still an invoice preview, not a certified statutory GST tax invoice.`))return;
+ if(!await showPosSaleConfirm({title:fromCrm?"Confirm CRM order":"Confirm sale",amount:s.total,description:`The invoice will be recorded, stock deducted and (for identifiable customers) linked to the central CRM identity. ${channel==="online"?"An online order will also create a dispatch task.":""}`}))return;
  if(posSaleCommitInProgress)return toast("Sale is already being saved. Please wait.");
  posSaleCommitInProgress=true;setPosCommitLock(true);
  try{
@@ -4354,7 +4986,7 @@ async function finalizeSale(options={}){
      if(s.additionalContactName&&s.additionalContactMobile)putContact({name:s.additionalContactName,designation:"Additional contact",mobile:digitsOnly(s.additionalContactMobile),whatsapp:digitsOnly(s.additionalContactMobile),isPrimary:false});
     }
     const primaryContact=channel==="b2b"?{name:s.contactPersonName,designation:s.contactDesignation||"",mobile:normalizedMobile,whatsapp:digitsOnly(s.whatsappMobile)||normalizedMobile,isPrimary:true}:(customerOld.primaryContact||null);
-    customerRecord={...customerOld,customerId,...(channel==="b2b"?{customerCode:customerOld.customerCode||("B2B-"+customerId.replace(/^b2b_/,"").slice(-8).toUpperCase())}:{}),displayName:s.customer||customerOld.displayName||"",customerName:s.customer||customerOld.customerName||"",businessName:channel==="b2b"?(s.customer||customerOld.businessName||""):(customerOld.businessName||""),mobile:normalizedMobile||customerOld.mobile||"",contactPersonName:channel==="b2b"?s.contactPersonName:(customerOld.contactPersonName||""),contactName:channel==="b2b"?s.contactPersonName:(customerOld.contactName||""),contactDesignation:channel==="b2b"?s.contactDesignation:(customerOld.contactDesignation||""),whatsappMobile:channel==="b2b"?(digitsOnly(s.whatsappMobile)||normalizedMobile):(customerOld.whatsappMobile||""),primaryContact,contacts:channel==="b2b"?priorContacts:(customerOld.contacts||[]),businessCategory:channel==="b2b"?s.businessCategory:(customerOld.businessCategory||""),creditLimit:channel==="b2b"?Number(s.creditLimit||0):Number(customerOld.creditLimit||0),creditDays:channel==="b2b"?Number(s.creditDays||0):Number(customerOld.creditDays||0),deliveryAddress:(channel==="b2b"||channel==="online"||(channel==="shop"&&s.localDelivery))?(s.deliveryAddress||""):(customerOld.deliveryAddress||""),pinCode:(channel==="online"||(channel==="shop"&&s.localDelivery))?(s.pinCode||""):(customerOld.pinCode||""),gstin:normalizedGstin||customerOld.gstin||"",legalName:s.legalName||customerOld.legalName||"",tradeName:s.tradeName||customerOld.tradeName||"",address:s.address||customerOld.address||"",customerType:channel==="b2b"?"B2B":(customerOld.customerType||"Retail"),lastSalesChannel:channel,lastSaleSource:s.orderSource||"",lastPurchaseAt:s.created,updatedAt:new Date().toISOString(),totalOrders:Number(customerOld.totalOrders||0)+1,totalSpend:Number(customerOld.totalSpend||0)+Number(s.total||0),updatedBy:currentUser.uid};
+    customerRecord={...customerOld,customerId,acquisitionChannel:customerOld.acquisitionChannel||customerOld.firstSalesChannel||customerOld.lastSalesChannel||channel,firstSalesChannel:customerOld.firstSalesChannel||customerOld.acquisitionChannel||customerOld.lastSalesChannel||channel,...(channel==="b2b"?{customerCode:customerOld.customerCode||("B2B-"+customerId.replace(/^b2b_/,"").slice(-8).toUpperCase())}:{}),displayName:s.customer||customerOld.displayName||"",customerName:s.customer||customerOld.customerName||"",businessName:channel==="b2b"?(s.customer||customerOld.businessName||""):(customerOld.businessName||""),mobile:normalizedMobile||customerOld.mobile||"",contactPersonName:channel==="b2b"?s.contactPersonName:(customerOld.contactPersonName||""),contactName:channel==="b2b"?s.contactPersonName:(customerOld.contactName||""),contactDesignation:channel==="b2b"?s.contactDesignation:(customerOld.contactDesignation||""),whatsappMobile:channel==="b2b"?(digitsOnly(s.whatsappMobile)||normalizedMobile):(customerOld.whatsappMobile||""),primaryContact,contacts:channel==="b2b"?priorContacts:(customerOld.contacts||[]),businessCategory:channel==="b2b"?s.businessCategory:(customerOld.businessCategory||""),creditLimit:channel==="b2b"?Number(s.creditLimit||0):Number(customerOld.creditLimit||0),creditDays:channel==="b2b"?Number(s.creditDays||0):Number(customerOld.creditDays||0),deliveryAddress:(channel==="b2b"||channel==="online"||(channel==="shop"&&s.localDelivery))?(s.deliveryAddress||""):(customerOld.deliveryAddress||""),pinCode:(channel==="online"||(channel==="shop"&&s.localDelivery))?(s.pinCode||""):(customerOld.pinCode||""),gstin:normalizedGstin||customerOld.gstin||"",legalName:s.legalName||customerOld.legalName||"",tradeName:s.tradeName||customerOld.tradeName||"",address:s.address||customerOld.address||"",customerType:channel==="b2b"?"B2B":(customerOld.customerType||"Retail"),lastSalesChannel:channel,lastSaleSource:s.orderSource||"",lastPurchaseAt:s.created,updatedAt:new Date().toISOString(),totalOrders:Number(customerOld.totalOrders||0)+1,totalSpend:Number(customerOld.totalSpend||0)+Number(s.total||0),updatedBy:currentUser.uid};
    }
    if(leadRef){
     const leadSnap=await tx.get(leadRef);
@@ -4372,13 +5004,13 @@ async function finalizeSale(options={}){
     if(!leadCode){
      const leadCounterRef=doc(db,"settings","crmLeadCounter");
      const leadCounterSnap=await tx.get(leadCounterRef);
-     const lastLeadNumber=Math.max(Number(leadCounterSnap.exists()?leadCounterSnap.data().lastNumber||0:0),crmLeads.length);
+     const lastLeadNumber=Math.max(Number(leadCounterSnap.exists()?leadCounterSnap.data().lastNumber||0:0),crmHighestLeadSequence());
      const nextLeadNumber=lastLeadNumber+1;
      leadCode=`LD-${String(nextLeadNumber).padStart(4,"0")}`;autoLeadCode=leadCode;
      tx.set(leadCounterRef,{lastNumber:nextLeadNumber,updatedAt:nowLead,updatedBy:currentUser.uid},{merge:true});
     }
     const nextOrderCount=Math.max(Number(oldLead.orderCount||0),oldLead.invoiceId?1:0)+1;
-    leadRecord={...oldLead,id:leadRef.id,leadCode,name:oldLead.name||crmIdentityName,mobile:oldLead.mobile||normalizedMobile,gstin:oldLead.gstin||normalizedGstin,salesChannel:oldLead.salesChannel||channel,leadType:oldLead.leadType||(channel==="b2b"?"B2B":channel==="shop"?"Shop":"Online"),whatsappNumber:oldLead.whatsappNumber||digitsOnly(s.whatsappMobile)||normalizedMobile,status:"Converted",activityTimeline:[...(Array.isArray(oldLead.activityTimeline)?oldLead.activityTimeline:[]),{type:"Order converted",stage:"Won",note:`Order ${s.invoiceNo} created · ${money(s.total||0)}`,at:nowLead,by:currentUser.uid}].slice(-100),customerId:customerId||null,orderId:s.id,invoiceId:s.invoiceNo,lastOrderId:s.id,lastInvoiceId:s.invoiceNo,lastOrderedAt:nowLead,lastOrderTotal:Number(s.total||0),lastPaymentMode:s.onlinePaymentMode||s.payment,orderCount:nextOrderCount,convertedAt:oldLead.convertedAt||nowLead,convertedBy:oldLead.convertedBy||currentUser.uid,updatedAt:nowLead,updatedBy:currentUser.uid};
+    leadRecord={...oldLead,id:leadRef.id,leadCode,name:oldLead.name||crmIdentityName,mobile:oldLead.mobile||normalizedMobile,gstin:oldLead.gstin||normalizedGstin,salesChannel:oldLead.salesChannel||channel,channel:oldLead.channel||channel,leadType:oldLead.leadType||(channel==="b2b"?"B2B":channel==="shop"?"Shop":"Online"),salesChannels:[...new Set([...(Array.isArray(oldLead.salesChannels)?oldLead.salesChannels:[]),crmLeadChannel(oldLead),channel])],channelSources:{...(oldLead.channelSources||{}),[channel]:oldLead.channelSources?.[channel]||s.orderSource||channel},whatsappNumber:oldLead.whatsappNumber||digitsOnly(s.whatsappMobile)||normalizedMobile,status:"Converted",activityTimeline:[...(Array.isArray(oldLead.activityTimeline)?oldLead.activityTimeline:[]),{type:"Order converted",stage:"Won",note:`Order ${s.invoiceNo} created · ${money(s.total||0)}`,at:nowLead,by:currentUser.uid}].slice(-100),customerId:customerId||null,orderId:s.id,invoiceId:s.invoiceNo,lastOrderId:s.id,lastInvoiceId:s.invoiceNo,lastOrderedAt:nowLead,lastOrderTotal:Number(s.total||0),lastPaymentMode:s.onlinePaymentMode||s.payment,orderCount:nextOrderCount,convertedAt:oldLead.convertedAt||nowLead,convertedBy:oldLead.convertedBy||currentUser.uid,updatedAt:nowLead,updatedBy:currentUser.uid};
    }
    const orderRecord={id:s.id,orderId:s.id,leadId:s.leadId||null,leadCode:leadRecord?.leadCode||"",customerId:customerId||null,customer:s.customer,contactPersonName:s.contactPersonName||"",contactDesignation:s.contactDesignation||"",contactMobile:normalizedMobile,whatsappMobile:s.whatsappMobile||"",businessCategory:s.businessCategory||"",invoiceId:s.invoiceNo,saleId:s.id,status:"Invoiced",salesChannel:channel,channelLabel:s.channelLabel,orderSource:s.orderSource||"",campaign:leadRecord?.campaign||"",mobile:normalizedMobile,address:s.address||"",deliveryAddress:s.deliveryAddress||"",pinCode:s.pinCode||"",postOffice:s.postOffice||"",postOfficeType:s.postOfficeType||"",postOfficeDeliveryStatus:s.postOfficeDeliveryStatus||"",postOfficeRegion:s.postOfficeRegion||"",postOfficeDivision:s.postOfficeDivision||"",postOfficeCircle:s.postOfficeCircle||"",onlinePaymentMode:s.onlinePaymentMode||"",partialPaidAmount:Number(s.partialPaidAmount||0),deliveryCharge:Number(s.deliveryCharge||0),packagingCost:Number(s.packagingCost||0),paidAmount:s.paidAmount,paymentEntries:s.paymentEntries,paymentReference:s.paymentReference||"",items:s.items.map(x=>({productId:x.productId,name:x.name,sku:x.sku||"",qty:Number(x.qty),price:Number(x.price),originalSellingPrice:Number(x.originalSellingPrice??x.price),priceEdited:!!x.priceEdited,gst:x.gst,hsn:x.hsn||""})),subtotal:s.subtotal,discount:s.discount,total:s.total,payment:s.payment,paymentStatus:s.paymentStatus,createdAt:s.created,createdBy:currentUser.uid,updatedAt:new Date().toISOString()};
    needsFulfilment=channel==="online"||(channel==="shop"&&(s.payment==="Credit"||s.localDelivery));
@@ -4419,7 +5051,14 @@ async function finalizeSale(options={}){
    $("crmOrderSuccessDetails").textContent=`${s.invoiceNo} · ${s.customer} · ${money(s.total)} · ${s.payment}`;
    $("crmOrderSuccess").classList.remove("hidden");
    renderCrm();
-  }else showPosSaleSuccess(s);
+  }else{
+   showPosSaleSuccess(s);
+   if(channel==="shop"&&$("thermalAutoPrint")?.value==="yes"){
+    if(wellwithThermalPort?.writable){
+     thermalPrinterPrintSale(s).then(()=>toast(`Thermal receipt printed: ${s.invoiceNo}`)).catch(e=>{console.error("Automatic thermal receipt failed",e);toast(`Sale saved, but receipt printing failed: ${e?.message||"Printer error"}`);});
+    }else{toast("Sale saved. Thermal auto-print is enabled, but the printer is disconnected. Reconnect it in POS Settings.");}
+   }
+  }
   toast(`${fromCrm?"CRM invoice":"Sale"} recorded in Firestore and stock deducted: ${s.invoiceNo}`);
   return true;
  }catch(e){
@@ -4991,7 +5630,90 @@ function printPurchaseReport(){const r=buildPurchaseReport(),body=r.rows.map(x=>
 .crm-stage-step:disabled{opacity:.5;cursor:not-allowed}
 .crm-form-section{grid-column:1/-1;border-bottom:1px solid var(--line);padding:7px 0 3px;margin-top:7px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 @media(max-width:640px){.crm-stage-step{flex:1 1 44%;justify-content:flex-start}}
-</style></head><body><h1>WELLWITH · Purchase & Supplier Report</h1><p>DURGA VENTURES · Period: ${escapeHtml(r.from||'Beginning')} to ${escapeHtml(r.to||'Today')}</p><p><b>Goods received:</b> ${money(r.grns.reduce((n,x)=>n+Number(x.totalValue||0),0))} &nbsp; <b>Supplier bills:</b> ${money(r.bills.reduce((n,x)=>n+Number(x.amount||0),0))} &nbsp; <b>Payments in period:</b> ${money(r.payments.reduce((n,x)=>n+Number(x.amount||0),0))}</p><p><b>Current outstanding:</b> ${money(r.outstanding)} &nbsp; <b>Overdue:</b> ${money(r.overdue)}</p><table><thead><tr><th>Supplier</th><th>GRN value</th><th>Bills</th><th>Payments</th><th>Outstanding</th><th>Overdue</th></tr></thead><tbody>${body}</tbody></table><p class="note">GRN value, bill value and payment value use their respective transaction dates. GRN value and bill value are separate measures and must not be added together. Current outstanding and overdue balances include all saved supplier bills.</p><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();}
+</style>
+<style id="v9-05-pos-full-height-workspace">
+/* v9.05.0: Fill the available desktop viewport with both POS work panels. */
+@media (min-width:1051px){
+  #posView>.layout{
+    height:calc(100dvh - 148px)!important;
+    min-height:460px!important;
+    max-height:none!important;
+    align-items:stretch!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,.94fr)!important;
+  }
+  #posView>.layout>.panel{
+    display:flex!important;
+    flex-direction:column!important;
+    min-height:0!important;
+    height:100%!important;
+    overflow:hidden!important;
+  }
+  #posView>.layout>.panel>.panel-head{flex:0 0 auto!important}
+  #posView>.layout>.panel:first-child>.panel-body{
+    flex:1 1 auto!important;min-height:0!important;height:0!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+  }
+}
+@media (max-width:1050px){
+  #posView>.layout{height:auto!important;min-height:0!important;max-height:none!important}
+  #posView>.layout>.panel{height:auto!important;min-height:0!important;overflow:visible!important}
+  #posView>.layout>.panel:first-child>.panel-body{height:auto!important;overflow:visible!important}
+}
+
+
+/* v9.06.0: Correct POS viewport sizing after the compact toolbar was removed.
+   The old layout reserved 52px for a toolbar that is no longer present. */
+@media (min-width:1051px){
+  .content:has(>#posView:not(.hidden)){
+    height:calc(100dvh - 68px)!important;
+    min-height:0!important;
+    max-height:none!important;
+    box-sizing:border-box!important;
+    padding:12px 18px 14px!important;
+    overflow:hidden!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  #posView{
+    display:flex!important;
+    flex:1 1 auto!important;
+    flex-direction:column!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:hidden!important;
+  }
+  #posView>.layout{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-items:stretch!important;
+  }
+  #posView>.layout>.panel{
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+  }
+  #posView>.layout>.panel:first-child>.panel-body{
+    flex:1 1 auto!important;
+    height:0!important;
+    min-height:0!important;
+    overflow:auto!important;
+  }
+  #posView>.layout>.panel:last-child>.panel-body{
+    flex:1 1 auto!important;
+    height:0!important;
+    min-height:0!important;
+  }
+}
+@media (max-width:1050px){
+  .content:has(>#posView:not(.hidden)){height:auto!important;max-height:none!important;overflow:visible!important;display:block!important}
+  #posView{height:auto!important;min-height:0!important;overflow:visible!important}
+  #posView>.layout{height:auto!important;min-height:0!important;max-height:none!important}
+}
+</style>
+</head><body><h1>WELLWITH · Purchase & Supplier Report</h1><p>DURGA VENTURES · Period: ${escapeHtml(r.from||'Beginning')} to ${escapeHtml(r.to||'Today')}</p><p><b>Goods received:</b> ${money(r.grns.reduce((n,x)=>n+Number(x.totalValue||0),0))} &nbsp; <b>Supplier bills:</b> ${money(r.bills.reduce((n,x)=>n+Number(x.amount||0),0))} &nbsp; <b>Payments in period:</b> ${money(r.payments.reduce((n,x)=>n+Number(x.amount||0),0))}</p><p><b>Current outstanding:</b> ${money(r.outstanding)} &nbsp; <b>Overdue:</b> ${money(r.overdue)}</p><table><thead><tr><th>Supplier</th><th>GRN value</th><th>Bills</th><th>Payments</th><th>Outstanding</th><th>Overdue</th></tr></thead><tbody>${body}</tbody></table><p class="note">GRN value, bill value and payment value use their respective transaction dates. GRN value and bill value are separate measures and must not be added together. Current outstanding and overdue balances include all saved supplier bills.</p><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();}
 $('purchaseReportApply').onclick=renderPurchaseReport;$('purchaseReportClear').onclick=()=>{$('purchaseReportFrom').value='';$('purchaseReportTo').value='';renderPurchaseReport();};$('purchaseReportExport').onclick=exportPurchaseReport;$('purchaseReportPrint').onclick=printPurchaseReport;
 $('billAdd').onclick=openSupplierBill;$('billSave').onclick=saveSupplierBill;$('billSupplier').addEventListener('change',()=>{$('billGstin').value='';syncBillSupplierGstin();});['billTaxable','billCgst','billSgst','billIgst','billCess','billOther','billAmount'].forEach(id=>$(id).addEventListener('input',updateBillTaxCalc));$('billClose').onclick=$('billCancel').onclick=()=>$('supplierBillModal').classList.add('hidden');$('billSearch').oninput=renderSupplierBills;$('billStatusFilter').onchange=renderSupplierBills;$('billExport').onclick=exportSupplierBills;$('paymentClose').onclick=$('paymentCancel').onclick=()=>$('supplierPaymentModal').classList.add('hidden');$('supplierPaymentSave').onclick=saveSupplierPayment;
 renderSupplierBills();
@@ -5071,7 +5793,7 @@ $("mobile").addEventListener("input",()=>{
    const match=customers.find(c=>customerPhoneNumbers(c).some(n=>n.slice(-10)===digits.slice(-10)));
    if(match){selectCustomer(match);}
    else{
-     const lead=(crmLeads||[]).find(l=>l.status!=="Lost"&&customerPhoneNumbers(l).some(n=>n.slice(-10)===digits.slice(-10))&&(salesChannel==="b2b"?crmLeadChannel(l)==="b2b":crmLeadChannel(l)!=="b2b"));
+     const lead=crmCanonicalLeadForIdentity(digits,"")||((crmLeads||[]).find(l=>l.status!=="Lost"&&customerPhoneNumbers(l).some(n=>n.slice(-10)===digits.slice(-10)))||null);
      if(lead)selectCrmLeadForPos(lead);
      else await loadPosCustomerIntelligence({displayName:$("customerName").value.trim(),mobile:digits},digits);
    }
